@@ -1,0 +1,47 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+/* Bitcoin orange accent */
+.text-bitcoin {
+  color: #f7931a;
+}
+
+.bg-bitcoin {
+  background-color: #f7931a;
+}
+
+.border-bitcoin {
+  border-color: #f7931a;
+}
+
+/* Audio visualizer styles */
+.oscilloscope-container,
+.fft-container,
+.block-visualizer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Smooth transitions */
+* {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}

@@ -1,0 +1,46 @@
+{
+  "name": "inspira",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "AI-powered music generation and blockchain audio synthesis",
+  "scripts": {
+    "dev": "vite",
+    "dev:network": "vite --host 0.0.0.0",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "preview:network": "vite preview --host 0.0.0.0"
+  },
+  "dependencies": {
+    "@headlessui/react": "^2.2.7",
+    "@tailwindcss/vite": "^4.1.12",
+    "@tanstack/react-query": "^5.85.3",
+    "@types/audioworklet": "^0.0.82",
+    "daisyui": "^5.0.50",
+    "framer-motion": "^12.23.12",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-router-dom": "^7.8.0",
+    "tone": "^15.1.22",
+    "zustand": "^5.0.8"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.33.0",
+    "@tailwindcss/postcss": "^4.1.12",
+    "@types/node": "^25.0.6",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
+    "@vitejs/plugin-react": "^5.0.0",
+    "autoprefixer": "^10.4.21",
+    "eslint": "^9.33.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "^16.3.0",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.12",
+    "typescript": "~5.8.3",
+    "typescript-eslint": "^8.39.1",
+    "vite": "^7.1.2"
+  }
+}
