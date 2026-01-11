@@ -25,6 +25,9 @@ const AIGenerator: React.FC = () => {
   const [stems, setStems] = useState(2);
   const [modelSize, setModelSize] = useState<'small' | 'medium'>('small');
   const [guidance, setGuidance] = useState(3.0);
+  const [workflow, setWorkflow] = useState('sample_pack_grfft.template');
+  const [availableWorkflows, setAvailableWorkflows] = useState<Array<{value: string, label: string, name: string}>>([]);
+  const [isLoadingWorkflows, setIsLoadingWorkflows] = useState(true);
 
   const samplePrompts = [
     'lofi hip hop with vinyl texture and warm bass',
@@ -38,6 +41,7 @@ const AIGenerator: React.FC = () => {
   ];
 
   const stemOptions = [
+    { value: 0, label: '0 stems (Image Only)' },
     { value: 1, label: '1 stem (Drums)' },
     { value: 2, label: '2 stems (Drums + Bass)' },
     { value: 3, label: '3 stems (Drums + Bass + Chords)' },
@@ -53,6 +57,37 @@ const AIGenerator: React.FC = () => {
   useEffect(() => {
     return cleanup;
   }, [cleanup]);
+
+  // Fetch available workflows from the API
+  useEffect(() => {
+    const fetchWorkflows = async () => {
+      try {
+        const response = await fetch('/api/workflows');
+        if (response.ok) {
+          const data = await response.json();
+          setAvailableWorkflows(data.workflows || []);
+        } else {
+          console.error('Failed to fetch workflows');
+          // Fallback to default workflows
+          setAvailableWorkflows([
+            { value: 'sample_pack_grfft.template', label: 'Sample Pack with GRFFT', name: 'sample_pack_grfft' },
+            { value: 'image_only.template', label: 'Image Only', name: 'image_only' }
+          ]);
+        }
+      } catch (error) {
+        console.error('Error fetching workflows:', error);
+        // Fallback to default workflows
+        setAvailableWorkflows([
+          { value: 'sample_pack_grfft.template', label: 'Sample Pack with GRFFT', name: 'sample_pack_grfft' },
+          { value: 'image_only.template', label: 'Image Only', name: 'image_only' }
+        ]);
+      } finally {
+        setIsLoadingWorkflows(false);
+      }
+    };
+
+    fetchWorkflows();
+  }, []);
 
   useEffect(() => {
     if (bnsPrompt && currentBlock) {
@@ -75,11 +110,16 @@ const AIGenerator: React.FC = () => {
       bpm,
       key,
       duration,
-      stems,
       model_size: modelSize,
       guidance,
-      cover_model: "grfft"
+      cover_model: "grfft",
+      workflow: stems === 0 ? 'image_only.template' : workflow
     };
+
+    // Only include stems if not 0 (image only mode)
+    if (stems > 0) {
+      request.stems = stems;
+    }
 
     try {
       await generateSamplePack(request);
@@ -279,7 +319,27 @@ const AIGenerator: React.FC = () => {
               </div>
 
               {/* Advanced Parameters */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-base-content text-sm font-medium mb-2">Workflow</label>
+                  <select
+                    value={workflow}
+                    onChange={(e) => setWorkflow(e.target.value)}
+                    className="select select-bordered w-full bg-base-300"
+                    disabled={isGenerating || isLoadingWorkflows}
+                  >
+                    {isLoadingWorkflows ? (
+                      <option>Loading workflows...</option>
+                    ) : (
+                      availableWorkflows.map(wf => (
+                        <option key={wf.value} value={wf.value}>
+                          {wf.label}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </div>
+
                 <div>
                   <label className="block text-base-content text-sm font-medium mb-2">Model Size</label>
                   <select

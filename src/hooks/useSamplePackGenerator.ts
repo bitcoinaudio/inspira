@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { samplePackerAPI, type SamplePackJob, type SamplePackManifest } from '../utils/samplePackerAPI';
 
 export interface GenerationRequest {
@@ -10,6 +10,7 @@ export interface GenerationRequest {
   model_size?: 'small' | 'medium';
   guidance?: number;
   cover_model?: 'pil' | 'grfft';
+  workflow?: string;
 }
 
 export interface GenerationResult {
@@ -24,8 +25,26 @@ export const useSamplePackGenerator = () => {
   const [generationResult, setGenerationResult] = useState<GenerationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
+  const [isBackendHealthy, setIsBackendHealthy] = useState<boolean | null>(null);
 
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pollingIntervalRef = useRef<number>(2000);
+  const consecutiveErrorsRef = useRef<number>(0);
+
+  // Check backend health on mount
+  useEffect(() => {
+    const checkHealth = async () => {
+      try {
+        await samplePackerAPI.checkHealth();
+        setIsBackendHealthy(true);
+      } catch (error) {
+        setIsBackendHealthy(false);
+        console.error('Backend health check failed:', error);
+      }
+    };
+
+    checkHealth();
+  }, []);
 
   const stopPolling = useCallback(() => {
     if (pollingRef.current) {
@@ -38,6 +57,12 @@ export const useSamplePackGenerator = () => {
     try {
       const job = await samplePackerAPI.getJobStatus(jobId);
       setCurrentJob(job);
+      consecutiveErrorsRef.current = 0; // Reset error count on success
+      
+      // Reset polling interval on success
+      if (pollingIntervalRef.current > 2000) {
+        pollingIntervalRef.current = 2000;
+      }
 
       if (job.progress !== undefined && job.progress !== null) {
         setProgress(job.progress);
@@ -72,35 +97,56 @@ export const useSamplePackGenerator = () => {
         setIsGenerating(false);
       }
     } catch (pollError) {
+      consecutiveErrorsRef.current += 1;
+      
       console.error('Failed to poll job status:', pollError);
-      setError(`Failed to check generation status: ${pollError}`);
-      stopPolling();
-      setIsGenerating(false);
+      
+      // Implement exponential backoff for polling after errors
+      if (consecutiveErrorsRef.current <= 3) {
+        // Increase polling interval exponentially
+        pollingIntervalRef.current = Math.min(pollingIntervalRef.current * 2, 10000);
+        console.warn(`Polling error ${consecutiveErrorsRef.current}/3, increasing interval to ${pollingIntervalRef.current}ms`);
+      } else {
+        // Stop polling after 3 consecutive errors
+        stopPolling();
+        const errorMessage = pollError instanceof Error ? pollError.message : 'Failed to check generation status';
+        setError(`Connection lost: ${errorMessage}`);
+        setIsGenerating(false);
+      }
     }
   }, [stopPolling]);
 
   const generateSamplePack = useCallback(async (request: GenerationRequest) => {
     try {
+      // Check backend health before attempting generation
+      if (isBackendHealthy === false) {
+        throw new Error('Cannot connect to backend server. Please ensure the SamplePacker gateway is running on port 3003.');
+      }
+
       setIsGenerating(true);
       setError(null);
       setProgress(0);
       setCurrentJob(null);
       setGenerationResult(null);
+      consecutiveErrorsRef.current = 0;
+      pollingIntervalRef.current = 2000; // Reset polling interval
 
       const job = await samplePackerAPI.createSamplePack(request);
       setCurrentJob(job);
 
+      // Use dynamic polling interval with ref
       pollingRef.current = setInterval(() => {
         pollJobStatus(job.job_id);
-      }, 2000);
+      }, pollingIntervalRef.current);
 
       return job;
     } catch (genError) {
-      setError(`Failed to start generation: ${genError}`);
+      const errorMessage = genError instanceof Error ? genError.message : 'Failed to start generation';
+      setError(errorMessage);
       setIsGenerating(false);
       throw genError;
     }
-  }, [pollJobStatus]);
+  }, [pollJobStatus, isBackendHealthy]);
 
   const cancelGeneration = useCallback(async () => {
     stopPolling();
@@ -134,16 +180,32 @@ export const useSamplePackGenerator = () => {
     stopPolling();
   }, [stopPolling]);
 
+  // Add retry connection method
+  const retryConnection = useCallback(async () => {
+    setError(null);
+    try {
+      await samplePackerAPI.checkHealth();
+      setIsBackendHealthy(true);
+      return true;
+    } catch (error) {
+      setIsBackendHealthy(false);
+      setError('Still cannot connect to backend server');
+      return false;
+    }
+  }, []);
+
   return {
     isGenerating,
     currentJob,
     generationResult,
     error,
     progress,
+    isBackendHealthy,
     generateSamplePack,
     cancelGeneration,
     downloadAudioFile,
     clearResults,
     cleanup,
+    retryConnection,
   };
 };
