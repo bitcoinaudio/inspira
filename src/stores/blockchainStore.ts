@@ -202,7 +202,7 @@ export function generateBnsPrompt(merkleRoot: string, height: number): string {
   
   const parts = [`block ${height}`, genre, mood, bnsWords];
   if (era) parts.push(era);
-  parts.push('bitcoin blockchain');
+  parts.push('');
   
   return parts.join(' ').trim();
 }

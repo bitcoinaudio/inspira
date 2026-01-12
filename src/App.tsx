@@ -6,7 +6,10 @@ import { useEffect } from 'react';
 // Page components  
 import AIGenerator from './pages/AIGenerator';
 import BitcoinAudioDemo from './pages/BitcoinAudioDemo';
+import BitcoinAudioSampleEngine from './pages/BitcoinAudioSampleEngine';
+import BASEPacks from './pages/BASEPacks';
 import BlockchainAudioDemo from './pages/BlockchainAudioDemo';
+import SamplePacks from './pages/SamplePacks';
 
 import './App.css';
 
@@ -43,7 +46,15 @@ function App() {
                     to="/ai-generator" 
                     className={({ isActive }) => isActive ? 'active' : ''}
                   >
-                    🤖 AI Generator
+                    Inspira Generator
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink 
+                    to="/sample-packs" 
+                    className={({ isActive }) => isActive ? 'active' : ''}
+                  >
+                    Sample Packs
                   </NavLink>
                 </li>
                 <li>
@@ -51,7 +62,23 @@ function App() {
                     to="/bitcoin-audio" 
                     className={({ isActive }) => isActive ? 'active' : ''}
                   >
-                    🎹 Bitcoin Audio
+                    Bitcoin Audio
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink 
+                    to="/bitcoin-sample-engine" 
+                    className={({ isActive }) => isActive ? 'active' : ''}
+                  >
+                    B.A.S.E
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink 
+                    to="/base-packs" 
+                    className={({ isActive }) => isActive ? 'active' : ''}
+                  >
+                    B.A.S.E Packs
                   </NavLink>
                 </li>
                 <li>
@@ -59,7 +86,7 @@ function App() {
                     to="/blockchain-audio" 
                     className={({ isActive }) => isActive ? 'active' : ''}
                   >
-                    ⛓️ Blockchain Audio
+                    Blockchain Audio
                   </NavLink>
                 </li>
               </ul>
@@ -82,11 +109,14 @@ function App() {
           </nav>
 
           {/* Main Content */}
-          <main className="min-h-[calc(100vh-64px)]">
+          <main className="min-h-screen pt-16">
             <Routes>
               <Route path="/" element={<Navigate to="/ai-generator" replace />} />
               <Route path="/ai-generator" element={<AIGenerator />} />
+              <Route path="/sample-packs" element={<SamplePacks />} />
               <Route path="/bitcoin-audio" element={<BitcoinAudioDemo />} />
+              <Route path="/bitcoin-sample-engine" element={<BitcoinAudioSampleEngine />} />
+              <Route path="/base-packs" element={<BASEPacks />} />
               <Route path="/blockchain-audio" element={<BlockchainAudioDemo />} />
             </Routes>
           </main>

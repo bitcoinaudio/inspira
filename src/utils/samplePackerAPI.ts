@@ -42,7 +42,16 @@ export interface SamplePackJob {
   outputs?: {
     manifest?: string;
     audio_files?: string[];
+    image_url?: string;
   };
+}
+
+export interface BitcoinImageRequest {
+  imageData: string; // Base64 data URL from canvas
+  blockHeight: number;
+  dataSource: 'merkleRoot' | 'hash';
+  seed?: number;
+  stemSegments?: string[]; // 8 segments of hex data for audio generation
 }
 
 export interface SamplePackManifest {
@@ -79,7 +88,7 @@ export class SamplePackerAPI {
   private retryDelay: number;
   private isHealthy: boolean | null;
 
-  constructor(baseURL: string = '/api', retryAttempts: number = 3, retryDelay: number = 1000) {
+  constructor(baseURL: string = 'http://localhost:3003/api', retryAttempts: number = 3, retryDelay: number = 1000) {
     this.baseURL = baseURL;
     this.retryAttempts = retryAttempts;
     this.retryDelay = retryDelay;
@@ -239,6 +248,32 @@ export class SamplePackerAPI {
 
   getHealthStatus(): boolean | null {
     return this.isHealthy;
+  }
+
+  async createBitcoinImage(request: BitcoinImageRequest): Promise<SamplePackJob> {
+    const response = await this.fetchWithRetry(`${this.baseURL}/bitcoin/image`, {
+      method: 'POST',
+      body: JSON.stringify(request),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  async listWorkflows(): Promise<Array<{value: string, label: string, name: string, type: string}>> {
+    const response = await this.fetchWithRetry(`${this.baseURL}/workflows`);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.workflows || [];
   }
 }
 

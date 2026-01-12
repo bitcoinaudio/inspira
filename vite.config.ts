@@ -20,7 +20,7 @@ export default defineConfig({
         target: process.env.VITE_GATEWAY_SERVER_URL || "http://localhost:3003",
         changeOrigin: true,
         secure: false,
-        rewrite: p => p.replace(/^\/api/, ""),
+        rewrite: (path) => path,
       },
     },
   },

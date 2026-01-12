@@ -4,31 +4,62 @@ A React-based audio synthesis and AI music generation platform built on Bitcoin 
 
 ## Features
 
-### 🎵 AI Music Generator
+### 🤖 AI Music Generator
 Generate custom music and sample packs using AI with:
-- Text-to-music generation from natural language prompts
-- Bitcoin blockchain-derived prompts using BNS (Bitmap Naming Service) algorithm
-- Customizable parameters: BPM, key, duration, stem count
-- AI-generated cover art
-- Download complete sample pack packages
+- **Text-to-music generation** from natural language prompts
+- **Bitcoin blockchain-derived prompts** using BNS (Bitmap Naming Service) algorithm
+- **Customizable parameters**: BPM (40-200), key signatures, duration (4-32s), stems (1-10)
+- **AI-generated cover art** with graffiti style using Stable Diffusion
+- **Multiple workflows** with priority-based selection
+- **Real-time job tracking** with progress updates and status polling
+- **Download complete sample packs** as ZIP files
+
+### ₿ Bitcoin Audio Sample Engine (B.A.S.E)
+Transform Bitcoin blocks into unique generative audio stems and AI artwork:
+- **Block data input** - Enter any Bitcoin block height to fetch blockchain data
+- **8x8 color grid** - Visualize blockchain data as interactive color matrix
+- **8 audio stems** - Generate melodic patterns from Bitcoin hex data (merkle root or block hash)
+- **AI artwork generation** - ComfyUI transforms color grid into unique graffiti-style art
+- **Hex-to-note mapping** - Each hex character (0-f) maps to a musical note
+- **Downloadable packs** - Complete B.A.S.E packs with image and stem data
+- **B.A.S.E Packs gallery** - Browse all generated Bitcoin artwork and audio data
+
+### 📦 Sample Pack Browser
+Browse and manage your generated sample packs:
+- **Grid view** with responsive layout (1-4 columns)
+- **Cover art preview** with fallback placeholders
+- **Individual stem playback** - play/pause each audio stem
+- **Metadata display** - BPM, key, prompt, creation date
+- **Model information** - checkpoint, LoRA, and audio model used
+- **Quick download** - download complete packs with one click
+- **Auto-sorted** by creation date (newest first)
+- **Refresh on demand** to update the list
+
+### 🖼️ B.A.S.E Packs Gallery
+View all generated Bitcoin Audio Sample Engine artworks:
+- **Bitcoin-themed gallery** - Orange/yellow gradient design
+- **Block metadata** - Block height, data source, seed, generation time
+- **Image preview** - View generated AI artwork
+- **Download support** - Download individual images and stem data
+- **Status tracking** - See completion status and processing time
 
 ### 🎹 Bitcoin Audio Engine
 Web-based synthesizer with real-time visualization:
-- Oscilloscope (waveform display)
-- FFT spectrum analyzer
-- Virtual keyboard with polyphonic synth
-- Multiple oscillator types (sine, square, saw, triangle, FM)
-- ADSR envelope control
-- Effects chain (reverb, delay, chorus, phaser, distortion)
+- **Oscilloscope** (waveform display)
+- **FFT spectrum analyzer**
+- **Virtual keyboard** with polyphonic synth
+- **Multiple oscillator types** (sine, square, saw, triangle, FM)
+- **ADSR envelope control**
+- **Effects chain** (reverb, delay, chorus, phaser, distortion)
 
 ### ⛓️ Blockchain Audio Engine
 Transform Bitcoin blockchain data into music and visual art:
-- Real-time data from Blockstream API
-- 64-color visualization from merkle roots
-- Hex-to-note musical mapping
-- Block sequence playback
-- Audio-reactive circular visualizer
-- Block navigation with quick-jump buttons
+- **Real-time data** from Blockstream API
+- **64-color visualization** from merkle roots
+- **Hex-to-note musical mapping**
+- **Block sequence playback**
+- **Audio-reactive circular visualizer**
+- **Block navigation** with quick-jump buttons
 
 ## Tech Stack
 
@@ -72,8 +103,11 @@ npm run preview
 Create a `.env` file in the root directory:
 
 ```env
-# API Gateway for AI generation (optional, defaults to localhost:3002)
-VITE_API_URL=http://localhost:3002
+# API Gateway for AI generation (optional, defaults to proxied /api)
+VITE_API_URL=http://localhost:3003
+
+# Backend must be running for AI Generator and Sample Pack Browser
+# See: https://github.com/yourusername/samplepacker.ai
 ```
 
 ## Project Structure
@@ -87,8 +121,11 @@ inspira/
 │   ├── hooks/
 │   │   └── useSamplePackGenerator.ts
 │   ├── pages/
-│   │   ├── AIGenerator.tsx
-│   │   ├── BitcoinAudioDemo.tsx
+│   │   ├── AIGenerator.tsx       # AI music generation UI
+│   │   ├── SamplePacks.tsx       # Sample pack browser
+│   │   ├── BitcoinAudioDemo.tsx  # Synthesizer demo
+│   │   ├── BitcoinAudioSampleEngine.tsx # B.A.S.E generator
+│   │   ├── BASEPacks.tsx         # B.A.S.E gallery
 │   │   └── BlockchainAudioDemo.tsx
 │   ├── stores/
 │   │   ├── blockchainStore.ts    # BNS algorithm & state
@@ -118,15 +155,72 @@ Change theme via the theme selector in the navigation bar.
 
 ## API Endpoints
 
-The AI Generator requires a backend API (proxied through Vite in development):
+The AI Generator, B.A.S.E, and Sample Pack Browser connect to the SamplePacker AI backend:
 
-- `POST /api/jobs` - Start a new generation job
-- `GET /api/jobs/:id/status` - Poll job status
-- `GET /api/jobs/:id/manifest` - Get generated content manifest
-- `GET /api/files/:path` - Fetch generated files (audio/images)
+### Generation
+- `GET /api/workflows` - List available workflows
+- `POST /api/packs` - Start a new generation job
+- `POST /api/bitcoin/image` - Generate B.A.S.E pack (image + stems)
+- `GET /api/jobs/:id` - Get job status and details
+- `GET /api/jobs` - List all jobs (supports filtering: `?status=completed`)
+
+### Sample Packs
+- `GET /api/packs` - List all generated sample packs
+- `GET /api/packs/:id/download` - Download complete pack as ZIP
+- `GET /api/packs/:id/package` - Get pack metadata
+
+### Files
+- `GET /api/files/:filename` - Fetch generated files (audio/images/stem data)
+
+### Vite Proxy (Development)
+All `/api/*` requests are proxied to `http://localhost:3003` in development mode.)
 - `GET /api/packs/:id/package` - Download complete sample pack
 
 ## Component Usage
+
+### BitcoinAudioSampleEngine
+
+```tsx
+import BitcoinAudioSampleEngine from './pages/BitcoinAudioSampleEngine';
+
+<BitcoinAudioSampleEngine />
+```
+
+Complete B.A.S.E generator with:
+- Block height input and data fetching
+- 8x8 interactive color grid from blockchain data
+- 8 audio stems with Tone.js synthesis
+- AI artwork generation via ComfyUI
+- Data source selection (merkle root or block hash)
+
+### BASEPacks
+
+```tsx
+import BASEPacks from './pages/BASEPacks';
+
+<BASEPacks />
+```
+
+Gallery view with:
+- All completed B.A.S.E packs
+- Block metadata (height, source, seed, time)
+- Generated artwork preview
+- Download buttons for images and stem data
+
+### SamplePacks
+
+```tsx
+import SamplePacks from './pages/SamplePacks';
+
+<SamplePacks />
+```
+
+Features:
+- Responsive grid (1-4 columns based on screen size)
+- Individual stem playback with play/pause controls
+- Cover art display with automatic fallback
+- Download button for complete packs
+- Metadata display (BPM, key, stems, date, models)
 
 ### BitcoinAudioEngine
 

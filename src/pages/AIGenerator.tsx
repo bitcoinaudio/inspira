@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSamplePackGenerator, type GenerationRequest } from '../hooks/useSamplePackGenerator';
 import { useBlockchainStore } from '../stores/blockchainStore';
+import { samplePackerAPI } from '../utils/samplePackerAPI';
 
 const AIGenerator: React.FC = () => {
   const {
@@ -25,8 +26,15 @@ const AIGenerator: React.FC = () => {
   const [stems, setStems] = useState(2);
   const [modelSize, setModelSize] = useState<'small' | 'medium'>('small');
   const [guidance, setGuidance] = useState(3.0);
-  const [workflow, setWorkflow] = useState('sample_pack_grfft.template');
-  const [availableWorkflows, setAvailableWorkflows] = useState<Array<{value: string, label: string, name: string}>>([]);
+  const [workflow, setWorkflow] = useState('inspira-packs/rad-graff-v1');
+  const [availableWorkflows, setAvailableWorkflows] = useState<Array<{
+    value: string;
+    label: string;
+    name: string;
+    type?: string;
+    category?: string;
+    categoryLabel?: string;
+  }>>([]);
   const [isLoadingWorkflows, setIsLoadingWorkflows] = useState(true);
 
   const samplePrompts = [
@@ -62,24 +70,36 @@ const AIGenerator: React.FC = () => {
   useEffect(() => {
     const fetchWorkflows = async () => {
       try {
-        const response = await fetch('/api/workflows');
-        if (response.ok) {
-          const data = await response.json();
-          setAvailableWorkflows(data.workflows || []);
-        } else {
-          console.error('Failed to fetch workflows');
-          // Fallback to default workflows
-          setAvailableWorkflows([
-            { value: 'sample_pack_grfft.template', label: 'Sample Pack with GRFFT', name: 'sample_pack_grfft' },
-            { value: 'image_only.template', label: 'Image Only', name: 'image_only' }
-          ]);
+        const workflows = await samplePackerAPI.listWorkflows();
+        setAvailableWorkflows(workflows);
+        
+        // Set default workflow to first inspira-packs workflow if available
+        if (workflows.length > 0 && !workflow) {
+          const inspiraWorkflow = workflows.find(w => (w as any).category === 'inspira-packs' || w.value.includes('inspira-packs'));
+          if (inspiraWorkflow) {
+            setWorkflow(inspiraWorkflow.value);
+          } else {
+            setWorkflow(workflows[0].value);
+          }
         }
       } catch (error) {
         console.error('Error fetching workflows:', error);
-        // Fallback to default workflows
+        // Fallback to default workflows with new structure
         setAvailableWorkflows([
-          { value: 'sample_pack_grfft.template', label: 'Sample Pack with GRFFT', name: 'sample_pack_grfft' },
-          { value: 'image_only.template', label: 'Image Only', name: 'image_only' }
+          { 
+            value: 'inspira-packs/rad-graff-v1',
+            label: 'Rad Graff V1',
+            name: 'rad-graff-v1',
+            category: 'inspira-packs',
+            categoryLabel: 'Inspira Packs'
+          },
+          {
+            value: 'base-packs/bitcoin-image-v1',
+            label: 'Bitcoin Image V1',
+            name: 'bitcoin-image-v1',
+            category: 'base-packs',
+            categoryLabel: 'Base Packs'
+          }
         ]);
       } finally {
         setIsLoadingWorkflows(false);
@@ -113,7 +133,7 @@ const AIGenerator: React.FC = () => {
       model_size: modelSize,
       guidance,
       cover_model: "grfft",
-      workflow: stems === 0 ? 'image_only.template' : workflow
+      workflow: workflow || 'rad-graff-v1'
     };
 
     // Only include stems if not 0 (image only mode)
@@ -148,7 +168,7 @@ const AIGenerator: React.FC = () => {
         <div className="card bg-base-200 shadow-lg">
           <div className="card-body">
             <h1 className="text-3xl font-bold text-primary mb-2 text-center">
-              🎵 AI Music Generator
+              Inspira Music Generator
             </h1>
             <p className="text-base-content opacity-70 text-center mb-6">
               Create custom music and sample packs with AI
@@ -159,8 +179,7 @@ const AIGenerator: React.FC = () => {
               {/* Bitcoin Block BNS Section */}
               <div className="bg-base-300 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-2xl">₿</span>
-                  <h3 className="text-lg font-semibold">Blockchain Inspiration (BNS)</h3>
+                   <h3 className="text-lg font-semibold">Blockchain Inspiration (BNS)</h3>
                 </div>
                 <p className="text-sm text-base-content/70 mb-3">
                   Generate prompts from Bitcoin block data using the Bitmap Naming Service algorithm
@@ -331,13 +350,28 @@ const AIGenerator: React.FC = () => {
                     {isLoadingWorkflows ? (
                       <option>Loading workflows...</option>
                     ) : (
-                      availableWorkflows.map(wf => (
-                        <option key={wf.value} value={wf.value}>
-                          {wf.label}
-                        </option>
+                      // Group workflows by category
+                      Object.entries(
+                        availableWorkflows.reduce((acc, wf) => {
+                          const category = wf.categoryLabel || wf.category || 'General';
+                          if (!acc[category]) acc[category] = [];
+                          acc[category].push(wf);
+                          return acc;
+                        }, {} as Record<string, typeof availableWorkflows>)
+                      ).map(([category, workflows]) => (
+                        <optgroup key={category} label={category}>
+                          {workflows.map(wf => (
+                            <option key={wf.value} value={wf.value}>
+                              {wf.label}
+                            </option>
+                          ))}
+                        </optgroup>
                       ))
                     )}
                   </select>
+                  <p className="text-xs text-base-content/50 mt-1">
+                    Workflows organized by pack type
+                  </p>
                 </div>
 
                 <div>
