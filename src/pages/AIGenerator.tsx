@@ -127,19 +127,17 @@ const AIGenerator: React.FC = () => {
 
     const request: GenerationRequest = {
       prompt: prompt.trim(),
-      bpm,
+      bpm: Number(bpm),
       key,
-      duration,
+      duration: Number(duration),
+      stems: Number(stems),
       model_size: modelSize,
-      guidance,
+      guidance: Number(guidance),
       cover_model: "grfft",
       workflow: workflow || 'rad-graff-v1'
     };
 
-    // Only include stems if not 0 (image only mode)
-    if (stems > 0) {
-      request.stems = stems;
-    }
+    console.log('[AIGenerator] Generation request:', request);
 
     try {
       await generateSamplePack(request);
@@ -168,7 +166,7 @@ const AIGenerator: React.FC = () => {
         <div className="card bg-base-200 shadow-lg">
           <div className="card-body">
             <h1 className="text-3xl font-bold text-primary mb-2 text-center">
-              Inspira Music Generator
+              Inspira Sample Pack Generator
             </h1>
             <p className="text-base-content opacity-70 text-center mb-6">
               Create custom music and sample packs with AI
@@ -324,7 +322,7 @@ const AIGenerator: React.FC = () => {
                   <label className="block text-base-content text-sm font-medium mb-2">Stems</label>
                   <select
                     value={stems}
-                    onChange={(e) => setStems(parseInt(e.target.value))}
+                    onChange={(e) => setStems(Number.parseInt(e.target.value, 10))}
                     className="select select-bordered w-full bg-base-300"
                     disabled={isGenerating}
                   >
@@ -334,6 +332,9 @@ const AIGenerator: React.FC = () => {
                       </option>
                     ))}
                   </select>
+                  <div className="text-xs text-base-content/50 mt-1">
+                    Selected stems: {stems}
+                  </div>
                 </div>
               </div>
 
