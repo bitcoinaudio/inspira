@@ -10,6 +10,7 @@ import BitcoinAudioSampleEngine from './pages/BitcoinAudioSampleEngine';
 import BASEPacks from './pages/BASEPacks';
 import BlockchainAudioDemo from './pages/BlockchainAudioDemo';
 import SamplePacks from './pages/SamplePacks';
+import InspiraStudio from './pages/InspiraStudio';
 
 import './App.css';
 
@@ -19,18 +20,21 @@ function App() {
   const { theme, setTheme } = useUIStore();
 
   useEffect(() => {
+    // Apply theme globally (DaisyUI reads data-theme)
+    document.documentElement.setAttribute('data-theme', theme);
+
     // Initialize audio on first click (browser autoplay policy)
     const handleClick = () => {
       console.log('🚀 Inspira audio engine ready');
     };
     document.addEventListener('click', handleClick, { once: true });
     return () => document.removeEventListener('click', handleClick);
-  }, []);
+  }, [theme]);
 
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
-        <div className="min-h-screen bg-base-100" data-theme={theme}>
+        <div className="min-h-screen bg-base-100 text-base-content">
           {/* Navigation */}
           <nav className="navbar bg-base-200 shadow-lg sticky top-0 z-50">
             <div className="navbar-start">
@@ -46,7 +50,7 @@ function App() {
                     to="/ai-generator" 
                     className={({ isActive }) => isActive ? 'active' : ''}
                   >
-                    Inspira Generator
+                    Packs Generator
                   </NavLink>
                 </li>
                 <li>
@@ -100,9 +104,7 @@ function App() {
                 <ul tabIndex={0} className="dropdown-content menu p-2 shadow bg-base-200 rounded-box w-32">
                   <li><button onClick={() => setTheme('dark')}>🌙 Dark</button></li>
                   <li><button onClick={() => setTheme('light')}>☀️ Light</button></li>
-                  <li><button onClick={() => setTheme('synthwave')}>🌆 Synthwave</button></li>
-                  <li><button onClick={() => setTheme('cyberpunk')}>🤖 Cyberpunk</button></li>
-                  <li><button onClick={() => setTheme('retro')}>📼 Retro</button></li>
+                
                 </ul>
               </div>
             </div>
@@ -114,6 +116,7 @@ function App() {
               <Route path="/" element={<Navigate to="/ai-generator" replace />} />
               <Route path="/ai-generator" element={<AIGenerator />} />
               <Route path="/sample-packs" element={<SamplePacks />} />
+              <Route path="/studio/:packId" element={<InspiraStudio />} />
               <Route path="/bitcoin-audio" element={<BitcoinAudioDemo />} />
               <Route path="/bitcoin-sample-engine" element={<BitcoinAudioSampleEngine />} />
               <Route path="/base-packs" element={<BASEPacks />} />

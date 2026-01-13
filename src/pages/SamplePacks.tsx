@@ -130,11 +130,11 @@ const SamplePacks: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-8">
+      <div className="min-h-screen bg-base-100 p-8">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl font-bold text-white mb-8">Sample Packs</h1>
+          <h1 className="text-4xl font-bold text-primary mb-8">Sample Packs</h1>
           <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-base-content"></div>
           </div>
         </div>
       </div>
@@ -143,14 +143,14 @@ const SamplePacks: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-8">
+      <div className="min-h-screen bg-base-100 p-8">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl font-bold text-white mb-8">Sample Packs</h1>
-          <div className="bg-red-500/20 border border-red-500 rounded-lg p-6">
-            <p className="text-white text-center">{error}</p>
+          <h1 className="text-4xl font-bold text-primary mb-8">Sample Packs</h1>
+          <div className="alert alert-error flex flex-col items-center gap-3">
+            <span>{error}</span>
             <button 
               onClick={fetchPacks}
-              className="mt-4 mx-auto block px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+              className="btn btn-sm btn-outline"
             >
               Retry
             </button>
@@ -161,13 +161,13 @@ const SamplePacks: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-8">
+    <div className="min-h-screen bg-base-100 p-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-4xl font-bold text-white">Sample Packs</h1>
+          <h1 className="text-4xl font-bold text-primary">Sample Packs</h1>
           <button 
             onClick={fetchPacks}
-            className="px-4 py-2 bg-white/10 backdrop-blur-sm text-white rounded-lg hover:bg-white/20 transition-colors"
+            className="btn btn-ghost"
           >
             Refresh
           </button>
@@ -175,17 +175,17 @@ const SamplePacks: React.FC = () => {
 
         {packs.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-white/60 text-lg">No sample packs yet. Generate your first pack!</p>
+            <p className="text-base-content/60 text-lg">No sample packs yet. Generate your first pack!</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {packs.map((pack) => (
               <div 
                 key={pack.job_id} 
-                className="bg-white/10 backdrop-blur-md rounded-xl overflow-hidden border border-white/20 hover:border-white/40 transition-all hover:shadow-2xl hover:scale-105"
+                className="card bg-base-200 shadow-xl border border-base-300 hover:shadow-2xl transition"
               >
                 {/* Cover Image */}
-                <div className="relative aspect-square bg-gradient-to-br from-purple-500/20 to-blue-500/20">
+                <div className="relative aspect-square bg-base-300">
                   {pack.cover_url ? (
                     <img 
                       src={pack.cover_url.startsWith('/api') ? pack.cover_url : `/api${pack.cover_url}`}
@@ -194,26 +194,26 @@ const SamplePacks: React.FC = () => {
                     />
                   ) : (
                     <div className="flex items-center justify-center h-full">
-                      <svg className="w-16 h-16 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="w-16 h-16 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
                       </svg>
                     </div>
                   )}
                   {/* BPM & Key Badge */}
-                  <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-full text-xs text-white">
+                  <div className="absolute top-2 right-2 badge badge-neutral">
                     {pack.parameters.bpm} BPM • {pack.parameters.key}
                   </div>
                 </div>
 
                 {/* Content */}
-                <div className="p-4">
+                <div className="card-body p-4">
                   {/* Title */}
-                  <h3 className="text-white font-semibold mb-2 line-clamp-2 min-h-[3rem]">
+                  <h3 className="text-base-content font-semibold mb-2 line-clamp-2 min-h-[3rem]">
                     {pack.prompt}
                   </h3>
 
                   {/* Metadata */}
-                  <div className="flex items-center gap-2 text-xs text-white/60 mb-3">
+                  <div className="flex items-center gap-2 text-xs text-base-content/60 mb-3">
                     <span>{pack.audio?.length || 0} stems</span>
                     <span>•</span>
                     <span>{formatDate(pack.created_at)}</span>
@@ -221,7 +221,7 @@ const SamplePacks: React.FC = () => {
 
                   {/* Model Info */}
                   {pack.models && (
-                    <div className="mb-3 text-xs text-white/50">
+                    <div className="mb-3 text-xs text-base-content/60">
                       {pack.models.checkpoint && (
                         <div className="truncate">🎨 {pack.models.checkpoint.replace('.safetensors', '')}</div>
                       )}
@@ -240,10 +240,10 @@ const SamplePacks: React.FC = () => {
                           <button
                             key={idx}
                             onClick={() => togglePlay(pack.job_id, audioPath)}
-                            className={`px-2 py-1 text-xs rounded-full transition-colors ${
+                            className={`badge badge-lg gap-2 cursor-pointer transition ${
                               playingAudio[pack.job_id] === audioPath
-                                ? 'bg-green-500 text-white'
-                                : 'bg-white/10 text-white/80 hover:bg-white/20'
+                                ? 'badge-success'
+                                : 'badge-ghost'
                             }`}
                           >
                             {playingAudio[pack.job_id] === audioPath ? '⏸' : '▶'} {audio.stem}
@@ -255,9 +255,18 @@ const SamplePacks: React.FC = () => {
 
                   {/* Footer Actions */}
                   <div className="flex gap-2">
+                    <a
+                      href={`/studio/${pack.job_id}`}
+                      className="btn btn-secondary flex-1"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                      Studio
+                    </a>
                     <button
                       onClick={() => downloadPack(pack.job_id)}
-                      className="flex-1 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-lg transition-colors flex items-center justify-center gap-2"
+                      className="btn btn-primary flex-1"
                     >
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />

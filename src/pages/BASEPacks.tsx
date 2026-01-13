@@ -260,11 +260,11 @@ const BASEPacks: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-900 via-yellow-900 to-amber-900 p-8">
+      <div className="min-h-screen bg-base-100 p-8">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl font-bold text-white mb-8">Bitcoin Audio Sample Engine (B.A.S.E) Packs</h1>
+          <h1 className="text-4xl font-bold text-primary mb-8">Bitcoin Audio Sample Engine (B.A.S.E) Packs</h1>
           <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-base-content"></div>
           </div>
         </div>
       </div>
@@ -273,14 +273,14 @@ const BASEPacks: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-900 via-yellow-900 to-amber-900 p-8">
+      <div className="min-h-screen bg-base-100 p-8">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl font-bold text-white mb-8">B.A.S.E Packs</h1>
-          <div className="bg-red-500/20 border border-red-500 rounded-lg p-6">
-            <p className="text-white text-center">{error}</p>
+          <h1 className="text-4xl font-bold text-primary mb-8">B.A.S.E Packs</h1>
+          <div className="alert alert-error flex flex-col items-center gap-3">
+            <span>{error}</span>
             <button 
               onClick={fetchBASEPacks}
-              className="mt-4 mx-auto block px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+              className="btn btn-sm btn-outline"
             >
               Retry
             </button>
@@ -291,23 +291,23 @@ const BASEPacks: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-900 via-yellow-900 to-amber-900 p-8">
+    <div className="min-h-screen bg-base-100 p-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-4xl font-bold text-white">B.A.S.E Packs</h1>
-            <p className="text-white/70 mt-2">Bitcoin Audio Sample Engine - Generated Packs</p>
+            <h1 className="text-4xl font-bold text-primary">B.A.S.E Packs</h1>
+            <p className="text-base-content/70 mt-2">Bitcoin Audio Sample Engine - Generated Packs</p>
           </div>
           <div className="flex gap-3">
             <a
               href="/bitcoin-sample-engine"
-              className="px-4 py-2 bg-gradient-to-r from-orange-500 to-yellow-500 text-white rounded-lg hover:from-orange-600 hover:to-yellow-600 transition-all font-semibold shadow-lg"
+              className="btn btn-primary"
             >
               Create Pack
             </a>
             <button 
               onClick={fetchBASEPacks}
-              className="px-4 py-2 bg-white/10 backdrop-blur-sm text-white rounded-lg hover:bg-white/20 transition-colors"
+              className="btn btn-ghost"
             >
               Refresh
             </button>
@@ -317,14 +317,14 @@ const BASEPacks: React.FC = () => {
         {packs.length === 0 ? (
           <div className="text-center py-12">
             <div className="mb-6">
-              <svg className="w-24 h-24 mx-auto text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-24 h-24 mx-auto text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
             </div>
-            <p className="text-white/60 text-lg mb-6">No B.A.S.E packs yet. Generate your first one!</p>
+            <p className="text-base-content/60 text-lg mb-6">No B.A.S.E packs yet. Generate your first one!</p>
             <a 
               href="/bitcoin-sample-engine"
-              className="inline-block px-8 py-4 bg-gradient-to-r from-orange-500 to-yellow-500 text-white font-semibold rounded-lg hover:from-orange-600 hover:to-yellow-600 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+              className="btn btn-primary btn-lg"
             >
               Create B.A.S.E Pack
             </a>
@@ -334,10 +334,10 @@ const BASEPacks: React.FC = () => {
             {packs.map((pack) => (
               <div 
                 key={pack.job_id} 
-                className="bg-white/10 backdrop-blur-md rounded-xl overflow-hidden border border-white/20 hover:border-white/40 transition-all hover:shadow-2xl hover:scale-105"
+                className="card bg-base-200 shadow-xl border border-base-300 hover:shadow-2xl transition"
               >
                 {/* Cover Image */}
-                <div className="relative aspect-square bg-gradient-to-br from-orange-500/20 to-yellow-500/20">
+                <div className="relative aspect-square bg-base-300">
                   {pack.outputs?.image_url ? (
                     <img 
                       src={toApiUrl(pack.outputs.image_url) || pack.outputs.image_url}
@@ -347,26 +347,26 @@ const BASEPacks: React.FC = () => {
                     />
                   ) : (
                     <div className="flex items-center justify-center h-full">
-                      <svg className="w-16 h-16 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="w-16 h-16 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
                     </div>
                   )}
                   {/* Block Badge */}
-                  <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-full text-xs text-white">
+                  <div className="absolute top-2 right-2 badge badge-neutral">
                     Block #{pack.parameters.blockHeight}
                   </div>
                 </div>
 
                 {/* Content */}
-                <div className="p-4">
+                <div className="card-body p-4">
                   {/* Title */}
-                  <h3 className="text-white font-semibold mb-2">
+                  <h3 className="text-base-content font-semibold mb-2">
                     Bitcoin Block #{pack.parameters.blockHeight}
                   </h3>
 
                   {/* Metadata */}
-                  <div className="flex flex-col gap-1 text-xs text-white/60 mb-3">
+                  <div className="flex flex-col gap-1 text-xs text-base-content/60 mb-3">
                     <div className="flex items-center gap-2">
                       <span>Source: {pack.parameters.dataSource === 'merkleRoot' ? 'Merkle Root' : 'Block Hash'}</span>
                     </div>
@@ -390,11 +390,7 @@ const BASEPacks: React.FC = () => {
 
                   {/* Status Badge */}
                   <div className="mb-3">
-                    <span className={`inline-block px-2 py-1 text-xs rounded-full ${
-                      pack.status === 'completed' 
-                        ? 'bg-green-500/20 text-green-300 border border-green-500/50'
-                        : 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/50'
-                    }`}>
+                    <span className={`badge badge-sm ${pack.status === 'completed' ? 'badge-success' : 'badge-warning'}`}>
                       {pack.status}
                     </span>
                   </div>
@@ -404,7 +400,7 @@ const BASEPacks: React.FC = () => {
                     <div className="mb-3">
                       <button
                         onClick={() => toggleExpanded(pack)}
-                        className="w-full flex items-center justify-between px-3 py-2 bg-white/5 hover:bg-white/10 rounded-lg transition-colors text-white text-sm"
+                        className="btn btn-sm btn-outline w-full justify-between"
                       >
                         <span className="flex items-center gap-2">
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -427,15 +423,11 @@ const BASEPacks: React.FC = () => {
                           {loadedStems[pack.job_id].map((stem, index) => (
                             <div 
                               key={index}
-                              className="flex items-center gap-2 px-2 py-1 bg-white/5 rounded text-xs text-white/80"
+                              className="flex items-center gap-2 px-2 py-1 bg-base-300 rounded text-xs"
                             >
                               <button
                                 onClick={() => toggleStemPlayback(pack, index)}
-                                className={`p-1 rounded transition-colors ${
-                                  playingStems[pack.job_id] === index
-                                    ? 'bg-red-500 hover:bg-red-600'
-                                    : 'bg-green-500 hover:bg-green-600'
-                                }`}
+                                className={`btn btn-xs ${playingStems[pack.job_id] === index ? 'btn-error' : 'btn-success'}`}
                               >
                                 {playingStems[pack.job_id] === index ? (
                                   <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -449,7 +441,7 @@ const BASEPacks: React.FC = () => {
                                 )}
                               </button>
                               <span className="flex-1">Stem {index + 1}</span>
-                              <span className="text-white/50">{stem?.notes?.length || 0} notes</span>
+                              <span className="text-base-content/60">{stem?.notes?.length || 0} notes</span>
                             </div>
                           ))}
                         </div>
@@ -459,9 +451,18 @@ const BASEPacks: React.FC = () => {
 
                   {/* Footer Actions */}
                   <div className="flex gap-2">
+                    <a
+                      href={`/studio/${pack.job_id}`}
+                      className="btn btn-secondary flex-1"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                      Studio
+                    </a>
                     <button
                       onClick={() => downloadPackage(pack)}
-                      className="flex-1 px-3 py-2 bg-gradient-to-r from-orange-600 to-yellow-600 hover:from-orange-700 hover:to-yellow-700 text-white text-sm rounded-lg transition-colors flex items-center justify-center gap-2 font-semibold"
+                      className="btn btn-primary flex-1"
                     >
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />

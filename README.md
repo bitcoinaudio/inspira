@@ -32,6 +32,7 @@ Browse and manage your generated sample packs:
 - **Metadata display** - BPM, key, prompt, creation date
 - **Model information** - checkpoint, LoRA, and audio model used
 - **Quick download** - download complete packs with one click
+- **Open in Studio** - mix and edit stems with Inspira Studio ✨ NEW
 - **Auto-sorted** by creation date (newest first)
 - **Refresh on demand** to update the list
 
@@ -40,7 +41,9 @@ View all generated Bitcoin Audio Sample Engine artworks:
 - **Bitcoin-themed gallery** - Orange/yellow gradient design
 - **Block metadata** - Block height, data source, seed, generation time
 - **Image preview** - View generated AI artwork
+- **Audio stems** - Expandable section to preview stems
 - **Download support** - Download individual images and stem data
+- **Open in Studio** - mix and edit stems with Inspira Studio ✨ NEW
 - **Status tracking** - See completion status and processing time
 
 ### 🎹 Bitcoin Audio Engine
@@ -60,6 +63,30 @@ Transform Bitcoin blockchain data into music and visual art:
 - **Block sequence playback**
 - **Audio-reactive circular visualizer**
 - **Block navigation** with quick-jump buttons
+
+### 🎛️ Inspira Studio ✨ NEW
+Professional browser-based audio mixing and recording workstation:
+- **Multi-stem mixer** - Mix multiple audio stems together
+- **Individual controls** per stem:
+  - Volume faders (-60dB to +6dB)
+  - Pan controls (L/C/R)
+  - Mute and Solo buttons
+- **Master mixer** with volume control and level metering
+- **ADSR Envelope Editor** - Per-stem attack, decay, sustain, release controls
+- **Effects Chain** - Per-stem effects with real-time parameter control:
+  - Reverb (wet, decay)
+  - Delay (wet, time)
+  - Chorus (wet, rate, depth)
+- **Visual Level Meters** - Real-time amplitude metering for all stems + master
+- **Frequency Spectrum Analyzer** - Real-time FFT visualization with color-coded frequency bands
+- **Master Limiter** - Hard limiting at adjustable threshold to prevent clipping
+- **Real-time recording** of mixed audio
+- **Browser download** - Get your mix as WebM audio
+- **Server storage** - Automatically saved to backend
+- **Settings persistence** - Mixer settings saved per pack
+- **Cover art display** - See the pack artwork while mixing
+
+**Access**: Click "Studio" button on any Sample Pack or B.A.S.E Pack card
 
 ## Tech Stack
 
@@ -119,19 +146,21 @@ inspira/
 │   │   ├── BitcoinAudioEngine/   # Synth & visualizers
 │   │   └── BlockchainAudioEngine/ # Blockchain audio components
 │   ├── hooks/
-│   │   └── useSamplePackGenerator.ts
+│   │   ├── useSamplePackGenerator.ts
+│   │   └── useStudioSettings.ts   # 🆕 Mixer settings persistence
 │   ├── pages/
-│   │   ├── AIGenerator.tsx       # AI music generation UI
-│   │   ├── SamplePacks.tsx       # Sample pack browser
-│   │   ├── BitcoinAudioDemo.tsx  # Synthesizer demo
+│   │   ├── AIGenerator.tsx        # AI music generation UI
+│   │   ├── SamplePacks.tsx        # Sample pack browser
+│   │   ├── InspiraStudio.tsx      # 🆕 Audio mixing workstation
+│   │   ├── BitcoinAudioDemo.tsx   # Synthesizer demo
 │   │   ├── BitcoinAudioSampleEngine.tsx # B.A.S.E generator
-│   │   ├── BASEPacks.tsx         # B.A.S.E gallery
+│   │   ├── BASEPacks.tsx          # B.A.S.E gallery
 │   │   └── BlockchainAudioDemo.tsx
 │   ├── stores/
-│   │   ├── blockchainStore.ts    # BNS algorithm & state
-│   │   └── uiStore.ts            # Theme state
+│   │   ├── blockchainStore.ts     # BNS algorithm & state
+│   │   └── uiStore.ts             # Theme state
 │   ├── utils/
-│   │   └── samplePackerAPI.ts    # AI generation API client
+│   │   └── samplePackerAPI.ts     # AI generation API client
 │   ├── App.tsx
 │   ├── App.css
 │   ├── index.css
@@ -139,7 +168,10 @@ inspira/
 ├── package.json
 ├── vite.config.ts
 ├── tailwind.config.js
-└── tsconfig.json
+├── tsconfig.json
+├── INSPIRA_STUDIO_IMPLEMENTATION.md  # 🆕 Full feature documentation
+├── INSPIRA_STUDIO_ARCHITECTURE.md    # 🆕 Technical architecture
+└── INSPIRA_STUDIO_QUICK_REFERENCE.md # 🆕 Developer guide
 ```
 
 ## Available Themes
@@ -155,7 +187,7 @@ Change theme via the theme selector in the navigation bar.
 
 ## API Endpoints
 
-The AI Generator, B.A.S.E, and Sample Pack Browser connect to the SamplePacker AI backend:
+The AI Generator, B.A.S.E, Sample Pack Browser, and Inspira Studio connect to the SamplePacker AI backend:
 
 ### Generation
 - `GET /api/workflows` - List available workflows
@@ -166,15 +198,20 @@ The AI Generator, B.A.S.E, and Sample Pack Browser connect to the SamplePacker A
 
 ### Sample Packs
 - `GET /api/packs` - List all generated sample packs
+- `GET /api/packs/:id` - Get single pack details
 - `GET /api/packs/:id/download` - Download complete pack as ZIP
 - `GET /api/packs/:id/package` - Get pack metadata
 
+### Studio (🆕 NEW)
+- `POST /api/studio/:packId/export` - Save recorded mix to server
+- `GET /api/studio/:packId/recordings` - List all recordings for a pack
+
 ### Files
 - `GET /api/files/:filename` - Fetch generated files (audio/images/stem data)
+- `GET /api/files/studio-recordings/:filename` - Fetch saved recordings
 
 ### Vite Proxy (Development)
-All `/api/*` requests are proxied to `http://localhost:3003` in development mode.)
-- `GET /api/packs/:id/package` - Download complete sample pack
+All `/api/*` requests are proxied to `http://localhost:3003` in development mode.
 
 ## Component Usage
 
@@ -259,6 +296,29 @@ import BlockchainAudioEngine from './components/BlockchainAudioEngine';
 />
 ```
 
+### InspiraStudio (🆕 NEW)
+
+```tsx
+import InspiraStudio from './pages/InspiraStudio';
+
+<InspiraStudio />
+```
+
+Complete audio mixing workstation:
+- Access via `/studio/:packId` route
+- Mix multiple audio stems
+- Adjust volume, pan, mute, solo
+- Record mixes in real-time
+- Save to server and download locally
+- Settings persist per pack
+
+**Example: Open from a Sample Pack**
+```tsx
+// User clicks "Studio" button on any pack card
+// Automatically navigates to /studio/{packId}
+// InspiraStudio loads pack data and initializes mixer
+```
+
 ## BNS Algorithm
 
 The Bitmap Naming Service (BNS) algorithm derives meaningful words from Bitcoin block merkle roots:
@@ -268,6 +328,73 @@ The Bitmap Naming Service (BNS) algorithm derives meaningful words from Bitcoin 
 3. Apply character shifts (0-9, a-f → alphabet mapping)
 4. Score matches by total shift distance
 5. Generate music prompts from the best matches
+
+## Roadmap & TODOs
+
+### Phase 1: Core Features (✅ Completed)
+- [x] Inspira Studio base implementation
+- [x] Multi-stem audio mixing
+- [x] Volume, pan, mute, solo controls
+- [x] Browser-based recording
+- [x] Server-side storage integration
+- [x] Settings persistence per pack
+- [x] Studio buttons on pack cards
+
+### Phase 2: Advanced Mixing (✅ Completed)
+- [x] ADSR envelope editor per stem
+- [x] Effects chain (reverb, delay, chorus)
+- [x] Level meters and loudness monitoring (real-time per-stem + master)
+- [x] Frequency spectrum analyzer (FFT visualization with color-coded bands)
+- [x] Master limiting/compression (adjustable threshold, 10:1 ratio)
+- [ ] Visual waveform oscilloscope display
+
+### Phase 3: Export & Quality (⏳ Planned)
+- [ ] Server-side high-quality WAV/MP3 export
+- [ ] Loudness normalization
+- [ ] Audio format detection
+- [ ] Batch download previous mixes
+- [ ] Share mix links
+
+### Phase 4: Collaboration (⏳ Future)
+- [ ] Mix versioning for validated users
+- [ ] Collaborative real-time mixing
+- [ ] Mix history and undo/redo
+- [ ] Preset saving and recall
+- [ ] ML-assisted auto-mixing
+
+### Phase 5: Integration (⏳ Future)
+- [ ] DAW plugin support (VST/AU)
+- [ ] MIDI input/output
+- [ ] Streaming to social media
+- [ ] Mobile app version
+
+## Known Limitations & TODOs
+
+### Backend
+- [ ] Add WAV encoder for high-quality exports (tone package ready)
+- [ ] Implement server-side audio rendering for WAV/MP3
+- [ ] Add recording cleanup job (old recordings)
+- [ ] Authentication layer for mix versioning
+
+### Frontend
+- [ ] Add debouncing to localStorage writes (performance)
+- [ ] Virtual scrolling for 100+ stems
+- [ ] Keyboard shortcuts for play/record/stop
+- [ ] Undo/redo stack for settings
+- [ ] Effect preset saving and recall
+- [ ] Visual waveform oscilloscope display
+
+### Data Model
+- [ ] B.A.S.E packs should output audio files, not JSON
+- [ ] Mix versioning schema (requires DB)
+- [ ] User authentication (optional)
+
+## Getting Help
+
+For detailed documentation:
+- **Feature Overview**: [INSPIRA_STUDIO_IMPLEMENTATION.md](./INSPIRA_STUDIO_IMPLEMENTATION.md)
+- **Architecture Guide**: [INSPIRA_STUDIO_ARCHITECTURE.md](./INSPIRA_STUDIO_ARCHITECTURE.md)
+- **Developer Reference**: [INSPIRA_STUDIO_QUICK_REFERENCE.md](./INSPIRA_STUDIO_QUICK_REFERENCE.md)
 
 ## License
 

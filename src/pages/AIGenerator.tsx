@@ -166,7 +166,7 @@ const AIGenerator: React.FC = () => {
         <div className="card bg-base-200 shadow-lg">
           <div className="card-body">
             <h1 className="text-3xl font-bold text-primary mb-2 text-center">
-              Inspira Sample Pack Generator
+              Sample Pack Generator
             </h1>
             <p className="text-base-content opacity-70 text-center mb-6">
               Create custom music and sample packs with AI
