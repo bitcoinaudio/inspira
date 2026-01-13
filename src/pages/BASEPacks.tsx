@@ -34,6 +34,18 @@ const BASEPacks: React.FC = () => {
   const [expandedPacks, setExpandedPacks] = useState<{ [key: string]: boolean }>({});
   const synthsRef = useRef<{ [key: string]: Tone.Synth[] }>({});
 
+  const toApiUrl = (maybePath?: string) => {
+    if (!maybePath) return undefined;
+    if (/^https?:\/\//i.test(maybePath)) return maybePath;
+
+    // Normalize so we never end up with /api/api/... and we always go through the Vite proxy.
+    if (maybePath.startsWith('/api/')) return maybePath;
+    if (maybePath.startsWith('/files/')) return `/api${maybePath}`;
+    if (maybePath.startsWith('files/')) return `/api/${maybePath}`;
+    if (maybePath.startsWith('/')) return `/api${maybePath}`;
+    return `/api/${maybePath}`;
+  };
+
   useEffect(() => {
     fetchBASEPacks();
     
@@ -48,17 +60,41 @@ const BASEPacks: React.FC = () => {
   const fetchBASEPacks = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/jobs?status=completed');
-      if (!response.ok) {
-        throw new Error('Failed to fetch BASE packs');
+      // The gateway defaults to returning only 20 jobs; if you have lots of non-B.A.S.E jobs,
+      // filtering client-side would show an empty list even though older B.A.S.E jobs exist.
+      const PAGE_SIZE = 200;
+      const MAX_PAGES = 5; // safety cap
+
+      let offset = 0;
+      let pagesFetched = 0;
+      let total: number | null = null;
+      const allCompletedJobs: BASEPack[] = [];
+
+      while (pagesFetched < MAX_PAGES) {
+        const response = await fetch(`/api/jobs?status=completed&limit=${PAGE_SIZE}&offset=${offset}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch BASE packs');
+        }
+        const data = await response.json();
+
+        const pageResults: BASEPack[] = (Array.isArray(data?.results) ? data.results : Array.isArray(data?.jobs) ? data.jobs : []) as BASEPack[];
+        if (typeof data?.total === 'number') total = data.total;
+
+        allCompletedJobs.push(...pageResults);
+
+        // Stop if no more pages.
+        if (pageResults.length < PAGE_SIZE) break;
+        offset += PAGE_SIZE;
+        pagesFetched += 1;
+        if (total !== null && offset >= total) break;
       }
-      const data = await response.json();
-      
-      console.log('Fetched jobs data:', data);
-      
+
+      console.log('Fetched completed jobs:', allCompletedJobs.length, 'total:', total);
+
       // Filter for bitcoin_image jobs only
-      const bitcoinJobs = data.results?.filter((job: BASEPack) => job.type === 'bitcoin_image') || [];
+      const bitcoinJobs = allCompletedJobs.filter((job) => job.type === 'bitcoin_image');
       console.log('Filtered bitcoin_image jobs:', bitcoinJobs.length);
+
       setPacks(bitcoinJobs);
       setError(null);
     } catch (err) {
@@ -189,7 +225,7 @@ const BASEPacks: React.FC = () => {
     // Download image
     if (pack.outputs?.image_url) {
       const imageLink = document.createElement('a');
-      imageLink.href = `/api${pack.outputs.image_url}`;
+      imageLink.href = toApiUrl(pack.outputs.image_url) || pack.outputs.image_url;
       imageLink.download = `BASE_block_${pack.parameters.blockHeight}_image.png`;
       imageLink.target = '_blank';
       document.body.appendChild(imageLink);
@@ -304,7 +340,7 @@ const BASEPacks: React.FC = () => {
                 <div className="relative aspect-square bg-gradient-to-br from-orange-500/20 to-yellow-500/20">
                   {pack.outputs?.image_url ? (
                     <img 
-                      src={`${pack.outputs.image_url}`}
+                      src={toApiUrl(pack.outputs.image_url) || pack.outputs.image_url}
                       alt={`Block ${pack.parameters.blockHeight}`}
                       className="w-full h-full object-cover"
                       crossOrigin="anonymous"
