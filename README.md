@@ -185,6 +185,38 @@ The app supports multiple DaisyUI themes:
 
 Change theme via the theme selector in the navigation bar.
 
+## Troubleshooting
+
+### Studio Not Loading Pack Data
+**Issue**: Studio page shows loading spinner indefinitely
+- **Solution**: Ensure gateway is running (`docker-compose ps` in samplepacker.ai folder)
+- **Check**: Gateway must serve `/api/packs` endpoint with complete manifest data
+- **Verify**: `curl http://localhost:3003/packs` returns pack list with `audio_urls` array
+
+### Stems Not Playing
+**Issue**: Play button doesn't produce audio
+- **Solution**: Check browser console (F12) for audio context errors
+- **Note**: Audio context requires user interaction (click page to enable)
+- **Check**: Verify stem URLs are accessible: `curl http://localhost:3003/files/[filename]`
+
+## Recent Fixes & Updates
+
+### ✅ Pack Loading Fix (January 2026)
+**Issue**: Inspira Studio was not displaying pack contents when navigating to `/studio/:packId`
+
+**Root Cause**: 
+- Component was attempting to fetch from non-existent `/api/packs/:id` endpoint
+- Gateway only provides `/api/packs` (list all) and `/api/jobs/:id` (job status)
+- Studio needs complete manifest data with `audio_urls` and `cover_url`
+
+**Solution**:
+- Updated Studio to fetch `/api/packs` and filter by `packId`
+- Gateway's `/packs` endpoint already includes full manifest with proper URLs
+- Studio now displays all pack metadata, cover art, and stems correctly
+
+**Files Modified**:
+- `src/pages/InspiraStudio.tsx` (lines 125-169) - Updated `loadPack()` effect
+
 ## API Endpoints
 
 The AI Generator, B.A.S.E, Sample Pack Browser, and Inspira Studio connect to the SamplePacker AI backend:
@@ -196,13 +228,14 @@ The AI Generator, B.A.S.E, Sample Pack Browser, and Inspira Studio connect to th
 - `GET /api/jobs/:id` - Get job status and details
 - `GET /api/jobs` - List all jobs (supports filtering: `?status=completed`)
 
-### Sample Packs
-- `GET /api/packs` - List all generated sample packs
-- `GET /api/packs/:id` - Get single pack details
+### Sample Packs & Studio (\ud83c\udd95 NEW)
+- `GET /api/packs` - List all generated sample packs with complete manifest data (includes `audio_urls` and `cover_url`)
+  - Used by: Sample Pack Browser, Inspira Studio for pack loading
+  - Returns: Array of packs with full metadata, audio URLs, and cover art URLs
 - `GET /api/packs/:id/download` - Download complete pack as ZIP
-- `GET /api/packs/:id/package` - Get pack metadata
+- `GET /api/packs/:id/package` - Get pack metadata for download
 
-### Studio (🆕 NEW)
+### Studio Recording
 - `POST /api/studio/:packId/export` - Save recorded mix to server
 - `GET /api/studio/:packId/recordings` - List all recordings for a pack
 
@@ -339,6 +372,7 @@ The Bitmap Naming Service (BNS) algorithm derives meaningful words from Bitcoin 
 - [x] Server-side storage integration
 - [x] Settings persistence per pack
 - [x] Studio buttons on pack cards
+- [x] Fixed pack loading from gateway `/packs` endpoint
 
 ### Phase 2: Advanced Mixing (✅ Completed)
 - [x] ADSR envelope editor per stem
@@ -374,6 +408,7 @@ The Bitmap Naming Service (BNS) algorithm derives meaningful words from Bitcoin 
 - [ ] Add WAV encoder for high-quality exports (tone package ready)
 - [ ] Implement server-side audio rendering for WAV/MP3
 - [ ] Add recording cleanup job (old recordings)
+- [ ] Add `/packs/:id` endpoint for direct pack retrieval (workaround: list & filter)
 - [ ] Authentication layer for mix versioning
 
 ### Frontend
