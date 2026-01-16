@@ -255,7 +255,12 @@ const SamplePacks: React.FC = () => {
                             {playingAudio[pack.job_id] === audioPath ? '⏸' : '▶'} {audio.stem}
                           </button>
                         );
-                      })}flex-col gap-2">
+                      })}
+                    </div>
+                  )}
+
+                  {/* Action Buttons */}
+                  <div className="flex-col gap-2">
                     <div className="flex gap-2">
                       <a
                         href={`/studio/${pack.job_id}`}
@@ -283,9 +288,15 @@ const SamplePacks: React.FC = () => {
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      Publish to Beatfeeme="btn btn-primary flex-1"
-                    >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      Publish to Beatfeed
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Publish to Beatfeed Modal */}
       <PublishToBeatfeedModal
@@ -298,17 +309,6 @@ const SamplePacks: React.FC = () => {
           fetchPacks();
         }}
       />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                      </svg>
-                      Download
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
     </div>
   );
 };
