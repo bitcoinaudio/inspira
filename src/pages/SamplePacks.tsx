@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import PublishToBeatfeedModal from '../components/PublishToBeatfeedModal';
 
 interface AudioFile {
   filename: string;
@@ -47,6 +48,11 @@ const SamplePacks: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [playingAudio, setPlayingAudio] = useState<{ [key: string]: string | null }>({});
   const [audioElements, setAudioElements] = useState<{ [key: string]: HTMLAudioElement }>({});
+  const [publishModal, setPublishModal] = useState<{ isOpen: boolean; packId: string; packTitle: string }>({
+    isOpen: false,
+    packId: '',
+    packTitle: ''
+  });
 
   useEffect(() => {
     fetchPacks();
@@ -249,26 +255,49 @@ const SamplePacks: React.FC = () => {
                             {playingAudio[pack.job_id] === audioPath ? '⏸' : '▶'} {audio.stem}
                           </button>
                         );
-                      })}
+                      })}flex-col gap-2">
+                    <div className="flex gap-2">
+                      <a
+                        href={`/studio/${pack.job_id}`}
+                        className="btn btn-secondary flex-1"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        Studio
+                      </a>
+                      <button
+                        onClick={() => downloadPack(pack.job_id)}
+                        className="btn btn-primary flex-1"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Download
+                      </button>
                     </div>
-                  )}
-
-                  {/* Footer Actions */}
-                  <div className="flex gap-2">
-                    <a
-                      href={`/studio/${pack.job_id}`}
-                      className="btn btn-secondary flex-1"
-                    >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
-                      Studio
-                    </a>
                     <button
-                      onClick={() => downloadPack(pack.job_id)}
-                      className="btn btn-primary flex-1"
+                      onClick={() => setPublishModal({ isOpen: true, packId: pack.job_id, packTitle: pack.prompt })}
+                      className="btn btn-warning w-full"
                     >
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Publish to Beatfeeme="btn btn-primary flex-1"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+
+      {/* Publish to Beatfeed Modal */}
+      <PublishToBeatfeedModal
+        packId={publishModal.packId}
+        packTitle={publishModal.packTitle}
+        isOpen={publishModal.isOpen}
+        onClose={() => setPublishModal({ ...publishModal, isOpen: false })}
+        onSuccess={() => {
+          // Optionally refresh packs list
+          fetchPacks();
+        }}
+      />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                       </svg>
                       Download
