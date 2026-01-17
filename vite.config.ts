@@ -22,6 +22,12 @@ export default defineConfig({
         secure: false,
         rewrite: (path) => path,
       },
+      "/beatfeed-api": {
+        target: process.env.VITE_BEATFEED_URL || "http://localhost:3001",
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/beatfeed-api/, '/api'),
+      },
     },
   },
   build: {

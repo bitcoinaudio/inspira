@@ -243,8 +243,144 @@ The AI Generator, B.A.S.E, Sample Pack Browser, and Inspira Studio connect to th
 - `GET /api/files/:filename` - Fetch generated files (audio/images/stem data)
 - `GET /api/files/studio-recordings/:filename` - Fetch saved recordings
 
+### Publishing
+- `GET /api/packs/:id/manifest` - Get Beatfeed-compliant manifest for publishing
+
 ### Vite Proxy (Development)
 All `/api/*` requests are proxied to `http://localhost:3003` in development mode.
+All `/beatfeed-api/*` requests are proxied to `http://api.beatfeed.local` to avoid CORS issues.
+
+## Publishing to Beatfeed 🚀
+
+Inspira integrates directly with [Beatfeed](https://beatfeed.xyz) to publish your AI-generated sample packs as digital products on the Bitcoin Lightning Network.
+
+### Quick Start
+
+1. **Generate a Sample Pack**
+   - Navigate to AI Generator page
+   - Create a sample pack with your desired settings
+   - Wait for generation to complete (shows up in Sample Packs page)
+
+2. **Publish to Beatfeed**
+   - On the Sample Packs page, find your pack
+   - Click the **"Publish to Beatfeed"** button (orange warning button)
+   - A modal dialog will appear with publishing options
+
+3. **Configure Publishing Settings**
+   - **Creator Handle**: Your Beatfeed creator username (default: `bitcoinaudio`)
+   - **Price (sats)**: Set price in satoshis (0 for free)
+   - **Visibility**: Public or Unlisted
+   - **Auto-publish**: Immediately publish (recommended)
+   - **Beatfeed API URL**: Default `/beatfeed-api` (proxied through Vite, no CORS issues)
+
+4. **Admin Key Setup**
+   - Click "Admin Key Setup" dropdown
+   - Enter your Beatfeed admin key
+   - Key is saved in browser localStorage for future use
+   - Default dev key: `beatfeed_dev_key_change_in_production`
+
+5. **Publish**
+   - Click **"🚀 Publish"** button
+   - Wait for confirmation (should take 2-5 seconds)
+   - Success message shows product slug and status
+   - Modal auto-closes after 3 seconds
+
+### How It Works
+
+1. **Manifest Generation**: When you publish, Inspira fetches a Beatfeed-compliant manifest from the gateway API (`/api/packs/:id/manifest`)
+2. **Manifest Upload**: The manifest URL is sent to Beatfeed's `/admin/publish-from-manifest` endpoint
+3. **Asset Processing**: Beatfeed fetches all assets (audio stems, cover art) from the manifest URLs
+4. **Product Creation**: A new product is created on Beatfeed with proper metadata and pricing
+5. **Lightning Integration**: Product is ready for sale with Lightning Network payments
+
+### Manifest Format
+
+Inspira generates [Beatfeed Manifest v2.0.0](../../contracts/beatfeed/manifest/v2-draft/) compliant metadata including:
+
+- **Artifact Information**: Title, description, tags, source app reference
+- **Creator Details**: Handle, display name, website
+- **Product Settings**: Price, visibility, edition size, license
+- **Assets**: Cover image, audio previews, bundle ZIP
+- **Contents**: Individual track/stem listings with metadata
+- **Provenance**: Generator info, parameters, seeds
+
+### Production Setup
+
+For production deployment, update these environment variables in your gateway:
+
+```bash
+# In samplepacker docker-compose.yml
+BEATFEED_API_URL=https://api.beatfeed.xyz/api
+BEATFEED_ADMIN_KEY=your_production_admin_key_here
+ASSET_BASE_URL=https://your-cdn.com/assets
+```
+
+Then in Inspira's PublishToBeatfeedModal, update the default `beatfeed_url` to your production endpoint.
+
+### Testing the Flow
+
+Run the included test script to verify end-to-end publishing:
+
+```bash
+cd apps/inspira
+.\test-publish-flow.ps1
+```
+
+This will:
+1. Test the gateway manifest endpoint
+2. Test the Beatfeed publish endpoint
+3. Verify successful product creation
+4. Display the product slug and URL
+
+### Troubleshooting
+
+**Error: "Route not found"**
+- Ensure gateway is running and updated: `docker-compose up -d --build gateway`
+- Manifest endpoint was added in latest version
+
+**Error: "Admin key invalid"**
+- Check your Beatfeed admin key in the modal
+- For local dev: `beatfeed_dev_key_change_in_production`
+- Keys are stored in browser localStorage
+
+**Error: "Manifest validation failed"**
+- Ensure pack generation completed successfully
+- Check gateway logs: `docker logs gateway`
+- Verify manifest exists: `curl http://localhost:3003/api/packs/:id/manifest`
+
+**Error: "Manifest fetch error: fetch failed" (500 Internal Server Error)**
+- Beatfeed API container cannot reach the gateway
+- Manifest URL must use `host.docker.internal:3003` not `localhost:3003`
+- This is handled automatically in the PublishToBeatfeedModal component
+- Verify gateway is accessible: `curl http://host.docker.internal:3003/api/packs`
+
+**Error: "Manifest missing required field: artifact.type"**
+- Gateway now automatically transforms internal manifests to Beatfeed v1.0.0 format
+- Ensure gateway is up to date: `docker-compose up -d --build gateway`
+- Verify manifest structure: `curl http://localhost:3003/api/packs/:id/manifest`
+- Should contain `schema`, `artifact`, `assets`, and `contents` top-level fields
+
+**Error: "Cannot reach Beatfeed API"**
+- Verify Beatfeed is running: `docker ps | grep beatfeed`
+- Check Beatfeed API health: `curl http://api.beatfeed.local/api/health`
+- For local dev, requests are proxied through `/beatfeed-api` to avoid CORS issues
+- If accessing Beatfeed directly, ensure CORS headers are configured
+
+**Publishing works locally but fails in production**
+- Ensure `ASSET_BASE_URL` is configured in gateway environment
+- Verify asset URLs are publicly accessible
+- Check CORS headers allow Beatfeed to fetch assets
+
+### Features
+
+- ✅ One-click publishing from Inspira UI
+- ✅ Beatfeed Manifest v2.0.0 compliant
+- ✅ Automatic asset URL resolution
+- ✅ Admin key persistence in localStorage
+- ✅ Configurable pricing and visibility
+- ✅ Auto-publish or draft mode
+- ✅ Success/error feedback with details
+- ✅ Product slug and view link on success
 
 ## Component Usage
 

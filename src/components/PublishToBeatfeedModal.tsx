@@ -25,7 +25,7 @@ const PublishToBeatfeedModal: React.FC<PublishToBeatfeedModalProps> = ({
     price_sats: 0,
     visibility: 'public',
     auto_publish: true,
-    beatfeed_url: 'http://api.beatfeed.local/api'
+    beatfeed_url: '/beatfeed-api'
   });
 
   const handlePublish = async () => {
@@ -35,10 +35,12 @@ const PublishToBeatfeedModal: React.FC<PublishToBeatfeedModalProps> = ({
       setSuccess(false);
 
       // Get manifest URL from SamplePacker
-      const manifestUrl = `${window.location.origin}/api/packs/${packId}/manifest`;
+      // Use host.docker.internal so Beatfeed API container can reach the gateway on host
+      const manifestUrl = `http://host.docker.internal:3003/api/packs/${packId}/manifest`;
 
-      // Publish to Beatfeed
-      const response = await fetch(`${formData.beatfeed_url}/admin/publish-from-manifest`, {
+      // Publish to Beatfeed (always use proxy to avoid CORS)
+      const beatfeedUrl = '/beatfeed-api';
+      const response = await fetch(`${beatfeedUrl}/admin/publish-from-manifest`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -207,19 +209,6 @@ const PublishToBeatfeedModal: React.FC<PublishToBeatfeedModalProps> = ({
                       disabled={isPublishing}
                     />
                   </label>
-                </div>
-
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text">Beatfeed API URL</span>
-                  </label>
-                  <input
-                    type="url"
-                    className="input input-bordered input-sm"
-                    value={formData.beatfeed_url}
-                    onChange={(e) => setFormData({ ...formData, beatfeed_url: e.target.value })}
-                    disabled={isPublishing}
-                  />
                 </div>
 
                 {/* Admin Key Setup */}
