@@ -250,9 +250,11 @@ The AI Generator, B.A.S.E, Sample Pack Browser, and Inspira Studio connect to th
 All `/api/*` requests are proxied to `http://localhost:3003` in development mode.
 All `/beatfeed-api/*` requests are proxied to `http://api.beatfeed.local` to avoid CORS issues.
 
-## Publishing to Beatfeed 🚀
+## Publishing to Beatfeed 🚀 ✅ FULLY OPERATIONAL
 
-Inspira integrates directly with [Beatfeed](https://beatfeed.xyz) to publish your AI-generated sample packs as digital products on the Bitcoin Lightning Network.
+Inspira successfully integrates with [Beatfeed](https://beatfeed.xyz) to publish your AI-generated sample packs as digital products on the Bitcoin Lightning Network.
+
+**Status:** All integration issues resolved! Publishing works end-to-end.
 
 ### Quick Start
 
@@ -374,13 +376,23 @@ This will:
 ### Features
 
 - ✅ One-click publishing from Inspira UI
-- ✅ Beatfeed Manifest v2.0.0 compliant
+- ✅ Beatfeed Manifest v1.0.0 compliant
+- ✅ Automatic manifest transformation (gateway handles conversion)
+- ✅ Docker networking support (host.docker.internal)
 - ✅ Automatic asset URL resolution
 - ✅ Admin key persistence in localStorage
 - ✅ Configurable pricing and visibility
 - ✅ Auto-publish or draft mode
 - ✅ Success/error feedback with details
 - ✅ Product slug and view link on success
+
+### Integration Fixes Applied (January 2026)
+
+1. **Vite Proxy**: Fixed to use `localhost:3001` instead of unresolvable `api.beatfeed.local`
+2. **Manifest URL**: Uses `host.docker.internal:3003` for Docker container access
+3. **Beatfeed API Validation**: Updated to check nested fields (`artifact.type`, `assets.bundle.url`)
+4. **Gateway Transformation**: Automatically converts internal manifests to Beatfeed v1.0.0 format
+5. **Database Constraints**: Fixed artifact upsert logic to use `source_app` + `source_ref`
 
 ## Component Usage
 
