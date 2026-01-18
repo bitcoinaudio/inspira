@@ -54,6 +54,7 @@ export interface BitcoinImageRequest {
   stemSegments?: string[]; // 8 segments of hex data for audio generation
 }
 
+// Normalized manifest interface (works with both legacy and Beatfeed v1.0.0 formats)
 export interface SamplePackManifest {
   job_id: string;
   prompt: string;
@@ -79,6 +80,104 @@ export interface SamplePackManifest {
   stats: {
     total_files: number;
     total_duration_estimate: number;
+  };
+}
+
+// Beatfeed Manifest v1.0.0 interfaces (for raw manifest parsing)
+interface BeatfeedStemEntry {
+  id: string;
+  title?: string;
+  audio?: {
+    kind: 'audio';
+    url: string;
+    duration_seconds?: number;
+    sample_rate_hz?: number;
+  };
+}
+
+interface BeatfeedManifestV1 {
+  schema?: { name: string; version: string };
+  artifact?: {
+    type: string;
+    source_app: string;
+    source_ref: string;
+    title: string;
+    description?: string;
+    created_at: string;
+  };
+  assets?: {
+    cover?: { kind: 'image'; url: string; size_bytes?: number };
+  };
+  contents?: {
+    stems?: BeatfeedStemEntry[];
+  };
+  provenance?: {
+    seeds?: { bpm?: number; key?: string };
+  };
+  x?: {
+    samplepacker?: {
+      job_id?: string;
+      parameters?: { bpm?: number; key?: string };
+      total_duration_seconds?: number;
+    };
+  };
+}
+
+// Type guard to check if manifest is Beatfeed v1.0.0 format
+function isBeatfeedManifest(manifest: unknown): manifest is BeatfeedManifestV1 {
+  return (
+    typeof manifest === 'object' &&
+    manifest !== null &&
+    'schema' in manifest &&
+    typeof (manifest as BeatfeedManifestV1).schema === 'object' &&
+    (manifest as BeatfeedManifestV1).schema?.name === 'beatfeed_manifest'
+  );
+}
+
+// Normalize any manifest format to our standard interface
+function normalizeManifest(rawManifest: unknown): SamplePackManifest {
+  if (isBeatfeedManifest(rawManifest)) {
+    // Beatfeed Manifest v1.0.0 format
+    const stems = rawManifest.contents?.stems || [];
+    const bpm = rawManifest.provenance?.seeds?.bpm || rawManifest.x?.samplepacker?.parameters?.bpm || 0;
+    const key = rawManifest.provenance?.seeds?.key || rawManifest.x?.samplepacker?.parameters?.key || '';
+    
+    return {
+      job_id: rawManifest.artifact?.source_ref || rawManifest.x?.samplepacker?.job_id || 'unknown',
+      prompt: rawManifest.artifact?.description || rawManifest.artifact?.title || '',
+      parameters: {
+        bpm,
+        key,
+        stems_count: stems.length,
+      },
+      created_at: rawManifest.artifact?.created_at || new Date().toISOString(),
+      format_version: rawManifest.schema?.version || '1.0.0',
+      audio: stems.map(stem => ({
+        stem: stem.id,
+        filename: stem.audio?.url?.split('/').pop() || `${stem.id}.wav`,
+        path: stem.audio?.url?.replace('{{ASSET_BASE}}/', '') || '',
+        duration_estimate: stem.audio?.duration_seconds || 8,
+        sample_rate: stem.audio?.sample_rate_hz || 32000,
+      })),
+      cover: rawManifest.assets?.cover ? {
+        filename: rawManifest.assets.cover.url?.split('/').pop() || 'cover.png',
+        path: rawManifest.assets.cover.url?.replace('{{ASSET_BASE}}/', '') || '',
+        size: rawManifest.assets.cover.size_bytes || 0,
+      } : null,
+      stats: {
+        total_files: stems.length,
+        total_duration_estimate: rawManifest.x?.samplepacker?.total_duration_seconds || 
+          stems.reduce((acc, s) => acc + (s.audio?.duration_seconds || 0), 0),
+      },
+    };
+  }
+  
+  // Legacy format - ensure audio array exists
+  const legacyManifest = rawManifest as SamplePackManifest;
+  return {
+    ...legacyManifest,
+    audio: legacyManifest.audio || [],
+    stats: legacyManifest.stats || { total_files: 0, total_duration_estimate: 0 },
   };
 }
 
@@ -226,7 +325,8 @@ export class SamplePackerAPI {
     const manifestBlob = await this.downloadFile(manifestFilename);
     const manifestText = await manifestBlob.text();
     
-    return JSON.parse(manifestText);
+    const rawManifest = JSON.parse(manifestText);
+    return normalizeManifest(rawManifest);
   }
 
   async checkHealth(): Promise<{ status: string; timestamp: string; uptime: number }> {
