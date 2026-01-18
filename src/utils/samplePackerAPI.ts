@@ -152,13 +152,21 @@ function normalizeManifest(rawManifest: unknown): SamplePackManifest {
       },
       created_at: rawManifest.artifact?.created_at || new Date().toISOString(),
       format_version: rawManifest.schema?.version || '1.0.0',
-      audio: stems.map(stem => ({
-        stem: stem.id,
-        filename: stem.audio?.url?.split('/').pop() || `${stem.id}.wav`,
-        path: stem.audio?.url?.replace('{{ASSET_BASE}}/', '') || '',
-        duration_estimate: stem.audio?.duration_seconds || 8,
-        sample_rate: stem.audio?.sample_rate_hz || 32000,
-      })),
+      audio: stems.map(stem => {
+        // Extract filename from URL, removing the {{ASSET_BASE}}/ placeholder
+        const rawUrl = stem.audio?.url || '';
+        const filename = rawUrl.split('/').pop() || `${stem.id}.wav`;
+        // Audio files are stored in the audio/ subdirectory on the gateway
+        const path = filename ? `audio/${filename}` : '';
+        
+        return {
+          stem: stem.id,
+          filename,
+          path,
+          duration_estimate: stem.audio?.duration_seconds || 8,
+          sample_rate: stem.audio?.sample_rate_hz || 32000,
+        };
+      }),
       cover: rawManifest.assets?.cover ? {
         filename: rawManifest.assets.cover.url?.split('/').pop() || 'cover.png',
         path: rawManifest.assets.cover.url?.replace('{{ASSET_BASE}}/', '') || '',

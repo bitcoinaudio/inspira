@@ -100,7 +100,10 @@ const PublishToBeatfeedModal: React.FC<PublishToBeatfeedModalProps> = ({
           <div className="p-6">
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-bold">Publish to Beatfeed</h3>
+              <div>
+                <h3 className="text-xl font-bold">Publish to Beatfeed</h3>
+                {packTitle && <p className="text-sm text-base-content/70 mt-1">{packTitle}</p>}
+              </div>
               <button
                 onClick={onClose}
                 className="btn btn-ghost btn-xs btn-circle"

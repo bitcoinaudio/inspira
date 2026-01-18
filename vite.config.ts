@@ -11,10 +11,12 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 5173,
-    headers: {
-      'Cross-Origin-Opener-Policy': 'same-origin',
-      'Cross-Origin-Embedder-Policy': 'require-corp'
-    },
+    // Note: COOP/COEP headers disabled for development compatibility
+    // Enable these in production if SharedArrayBuffer is needed for Tone.js AudioWorklet
+    // headers: {
+    //   'Cross-Origin-Opener-Policy': 'same-origin',
+    //   'Cross-Origin-Embedder-Policy': 'require-corp'
+    // },
     proxy: {
       "/api": {
         target: process.env.VITE_GATEWAY_SERVER_URL || "http://localhost:3003",
