@@ -25,7 +25,8 @@ const PublishToBeatfeedModal: React.FC<PublishToBeatfeedModalProps> = ({
     price_sats: 0,
     visibility: 'public',
     auto_publish: true,
-    beatfeed_url: '/beatfeed-api'
+    beatfeed_url: '/beatfeed-api',
+    use_tunnel: true  // Use Cloudflare tunnel for remote publishing
   });
 
   const handlePublish = async () => {
@@ -35,8 +36,10 @@ const PublishToBeatfeedModal: React.FC<PublishToBeatfeedModalProps> = ({
       setSuccess(false);
 
       // Get manifest URL from SamplePacker
-      // Use host.docker.internal so Beatfeed API container can reach the gateway on host
-      const manifestUrl = `http://host.docker.internal:3003/api/packs/${packId}/manifest`;
+      // Use tunnel URL for remote beatfeed.xyz, or host.docker.internal for local Docker
+      const manifestUrl = formData.use_tunnel
+        ? `https://samplepacker.bitcoinaudio.co/api/packs/${packId}/manifest`
+        : `http://host.docker.internal:3003/api/packs/${packId}/manifest`;
 
       // Publish to Beatfeed (always use proxy to avoid CORS)
       const beatfeedUrl = '/beatfeed-api';
@@ -209,6 +212,27 @@ const PublishToBeatfeedModal: React.FC<PublishToBeatfeedModalProps> = ({
                       disabled={isPublishing}
                     />
                   </label>
+                </div>
+
+                <div className="form-control">
+                  <label className="cursor-pointer label">
+                    <span className="label-text">
+                      Publish to beatfeed.xyz
+                      <span className="badge badge-success badge-sm ml-2">LIVE</span>
+                    </span>
+                    <input
+                      type="checkbox"
+                      className="checkbox checkbox-success"
+                      checked={formData.use_tunnel}
+                      onChange={(e) => setFormData({ ...formData, use_tunnel: e.target.checked })}
+                      disabled={isPublishing}
+                    />
+                  </label>
+                  <p className="text-xs text-base-content/50 pl-1">
+                    {formData.use_tunnel 
+                      ? '🌐 Publishing to live beatfeed.xyz (requires tunnel running)'
+                      : '🏠 Publishing to local Docker beatfeed'}
+                  </p>
                 </div>
 
                 {/* Admin Key Setup */}
