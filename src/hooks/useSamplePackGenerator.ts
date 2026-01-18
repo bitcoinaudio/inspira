@@ -77,7 +77,8 @@ export const useSamplePackGenerator = () => {
         
         try {
           const manifest = await samplePackerAPI.getJobManifest(jobId);
-          const audioUrls = manifest.audio.map(audio => `/api/files/${audio.path}`);
+          // Safely handle audio array - it should always exist after normalization, but add safety check
+          const audioUrls = (manifest.audio || []).map(audio => `/api/files/${audio.path}`);
           
           setGenerationResult({
             job,
