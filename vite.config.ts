@@ -23,7 +23,7 @@ export default defineConfig({
         rewrite: (path) => path,
       },
       "/beatfeed-api": {
-        target: process.env.VITE_BEATFEED_URL || "http://localhost:3001",
+        target: process.env.VITE_BEATFEED_URL || "https://api.beatfeed.xyz",
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/beatfeed-api/, '/api'),
