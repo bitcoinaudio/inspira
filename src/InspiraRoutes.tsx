@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 
 import InspiraLanding from './pages/InspiraLanding';
 import AIGenerator from './pages/AIGenerator';
