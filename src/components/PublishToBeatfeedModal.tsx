@@ -35,19 +35,36 @@ const PublishToBeatfeedModal: React.FC<PublishToBeatfeedModalProps> = ({
       setError(null);
       setSuccess(false);
 
+      // Check if admin key is set
+      const adminKey = localStorage.getItem('beatfeed_admin_key');
+      if (!adminKey) {
+        throw new Error('Please set your Beatfeed admin key in the "Admin Key Setup" section below.');
+      }
+
       // Get manifest URL from SamplePacker
       // Use tunnel URL for remote beatfeed.xyz, or host.docker.internal for local Docker
       const manifestUrl = formData.use_tunnel
         ? `https://samplepacker.bitcoinaudio.co/api/packs/${packId}/manifest`
         : `http://host.docker.internal:3003/api/packs/${packId}/manifest`;
 
-      // Publish to Beatfeed (always use proxy to avoid CORS)
-      const beatfeedUrl = '/beatfeed-api';
+      // Publish to Beatfeed
+      // Use Vite proxy (/beatfeed-api -> https://api.beatfeed.xyz) for live, or local Docker for dev
+      const beatfeedUrl = formData.use_tunnel
+        ? '/beatfeed-api'  // Proxied to https://api.beatfeed.xyz/api via Vite
+        : 'http://api.beatfeed.local/api';  // Local Docker beatfeed
+      
+      console.log('Publishing to Beatfeed:', {
+        beatfeedUrl,
+        manifestUrl,
+        creator_handle: formData.creator_handle,
+        use_tunnel: formData.use_tunnel
+      });
+
       const response = await fetch(`${beatfeedUrl}/admin/publish-from-manifest`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Admin-Key': localStorage.getItem('beatfeed_admin_key') || ''
+          'X-Admin-Key': adminKey
         },
         body: JSON.stringify({
           creator_handle: formData.creator_handle,
@@ -59,8 +76,17 @@ const PublishToBeatfeedModal: React.FC<PublishToBeatfeedModalProps> = ({
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `Failed to publish: ${response.statusText}`);
+        let errorMessage = `Failed to publish: ${response.status} ${response.statusText}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorData.message || errorMessage;
+        } catch {
+          // Response might not be JSON
+          const text = await response.text();
+          console.error('Error response:', text);
+          if (text) errorMessage = text.substring(0, 200);
+        }
+        throw new Error(errorMessage);
       }
 
       const publishResult = await response.json();
