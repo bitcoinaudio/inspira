@@ -1,0 +1,26 @@
+/*
+  Embedded-only styles for mounting Inspira inside the landing app.
+  Avoid Tailwind v4 directives here; the landing app owns Tailwind/DaisyUI.
+*/
+
+/* Audio visualizer layout helpers (used by the demo pages) */
+.oscilloscope-container,
+.fft-container,
+.block-visualizer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Keep the “active” nav style compatible when Inspira renders its navbar (standalone) */
+.navbar .active {
+  background-color: oklch(var(--p));
+  color: oklch(var(--pc));
+}
+
+/* Lightweight global transition smoothing (safe in embedded) */
+* {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}

@@ -195,7 +195,7 @@ export class SamplePackerAPI {
   private retryDelay: number;
   private isHealthy: boolean | null;
 
-  constructor(baseURL: string = 'http://localhost:3003/api', retryAttempts: number = 3, retryDelay: number = 1000) {
+  constructor(baseURL: string = (import.meta.env.VITE_API_URL || '/api'), retryAttempts: number = 3, retryDelay: number = 1000) {
     this.baseURL = baseURL;
     this.retryAttempts = retryAttempts;
     this.retryDelay = retryDelay;

@@ -1,9 +1,12 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '')
+
+  return {
   plugins: [react(), tailwindcss()],
   optimizeDeps: {
     exclude: ['tone']
@@ -19,13 +22,13 @@ export default defineConfig({
     // },
     proxy: {
       "/api": {
-        target: process.env.VITE_GATEWAY_SERVER_URL || "http://localhost:3003",
+        target: env.VITE_GATEWAY_SERVER_URL || "http://localhost:3003",
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path,
       },
       "/beatfeed-api": {
-        target: process.env.VITE_BEATFEED_URL || "https://api.beatfeed.xyz",
+        target: env.VITE_BEATFEED_URL || "https://api.beatfeed.xyz",
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/beatfeed-api/, '/api'),
@@ -43,5 +46,6 @@ export default defineConfig({
         }
       }
     }
+  }
   }
 })

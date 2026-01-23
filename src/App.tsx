@@ -1,16 +1,9 @@
-import { BrowserRouter as Router, Routes, Route, Navigate, NavLink } from 'react-router-dom';
+import { BrowserRouter as Router, NavLink } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useUIStore } from './stores/uiStore';
 import { useEffect } from 'react';
 
-// Page components  
-import AIGenerator from './pages/AIGenerator';
-import BitcoinAudioDemo from './pages/BitcoinAudioDemo';
-import BitcoinAudioSampleEngine from './pages/BitcoinAudioSampleEngine';
-import BASEPacks from './pages/BASEPacks';
-import BlockchainAudioDemo from './pages/BlockchainAudioDemo';
-import SamplePacks from './pages/SamplePacks';
-import InspiraStudio from './pages/InspiraStudio';
+import InspiraRoutes from './InspiraRoutes';
 
 import './App.css';
 
@@ -112,16 +105,7 @@ function App() {
 
           {/* Main Content */}
           <main className="min-h-screen pt-16">
-            <Routes>
-              <Route path="/" element={<Navigate to="/ai-generator" replace />} />
-              <Route path="/ai-generator" element={<AIGenerator />} />
-              <Route path="/sample-packs" element={<SamplePacks />} />
-              <Route path="/studio/:packId" element={<InspiraStudio />} />
-              <Route path="/bitcoin-audio" element={<BitcoinAudioDemo />} />
-              <Route path="/bitcoin-sample-engine" element={<BitcoinAudioSampleEngine />} />
-              <Route path="/base-packs" element={<BASEPacks />} />
-              <Route path="/blockchain-audio" element={<BlockchainAudioDemo />} />
-            </Routes>
+            <InspiraRoutes />
           </main>
 
           {/* Footer */}

@@ -127,11 +127,19 @@ npm run preview
 
 ### Environment Variables
 
-Create a `.env` file in the root directory:
+Create a `.env` (or `.env.local`) file in the `src/apps/inspira` directory:
 
 ```env
-# API Gateway for AI generation (optional, defaults to proxied /api)
-VITE_API_URL=http://localhost:3003
+# Where the Vite dev server proxies /api/* requests (standalone + embedded)
+VITE_GATEWAY_SERVER_URL=http://localhost:3003
+
+# Optional override for the API client base URL.
+# Default is `/api` (recommended) which works with the Vite proxy.
+# VITE_API_URL=/api
+# VITE_API_URL=http://localhost:3003
+
+# Optional override for Beatfeed publishing proxy target
+# VITE_BEATFEED_URL=https://api.beatfeed.xyz
 
 # Backend must be running for AI Generator and Sample Pack Browser
 # See: https://github.com/yourusername/samplepacker.ai

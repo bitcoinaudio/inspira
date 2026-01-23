@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import * as Tone from 'tone';
 
 interface StemData {
@@ -451,15 +452,15 @@ const BASEPacks: React.FC = () => {
 
                   {/* Footer Actions */}
                   <div className="flex gap-2">
-                    <a
-                      href={`/studio/${pack.job_id}`}
+                    <Link
+                      to={`../studio/${pack.job_id}`}
                       className="btn btn-secondary flex-1"
                     >
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
                       Studio
-                    </a>
+                    </Link>
                     <button
                       onClick={() => downloadPackage(pack)}
                       className="btn btn-primary flex-1"
