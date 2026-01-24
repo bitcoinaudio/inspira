@@ -30,6 +30,7 @@ const BASEPacks: React.FC = () => {
   const [packs, setPacks] = useState<BASEPack[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [playingStems, setPlayingStems] = useState<{ [key: string]: number | null }>({});
   const [loadedStems, setLoadedStems] = useState<{ [key: string]: StemData[] }>({});
   const [expandedPacks, setExpandedPacks] = useState<{ [key: string]: boolean }>({});
@@ -72,7 +73,7 @@ const BASEPacks: React.FC = () => {
       const allCompletedJobs: BASEPack[] = [];
 
       while (pagesFetched < MAX_PAGES) {
-        const response = await fetch(`/api/jobs?status=completed&limit=${PAGE_SIZE}&offset=${offset}`);
+        const response = await fetch(`/api/jobs?limit=${PAGE_SIZE}&offset=${offset}`);
         if (!response.ok) {
           throw new Error('Failed to fetch BASE packs');
         }
@@ -92,9 +93,20 @@ const BASEPacks: React.FC = () => {
 
       console.log('Fetched completed jobs:', allCompletedJobs.length, 'total:', total);
 
-      // Filter for bitcoin_image jobs only
-      const bitcoinJobs = allCompletedJobs.filter((job) => job.type === 'bitcoin_image');
-      console.log('Filtered bitcoin_image jobs:', bitcoinJobs.length);
+      const isBasePackJob = (job: BASEPack) => {
+        const type = (job.type || '').toLowerCase();
+        const hasBlockHeight = typeof job.parameters?.blockHeight === 'number';
+        const stemsFile = job.stems_file || '';
+        const hasBaseStems = stemsFile.startsWith('base_stems_') || stemsFile.includes('base_stems_');
+        const imageUrl = job.outputs?.image_url || '';
+        const hasBitcoinImage = imageUrl.includes('bitcoin_');
+
+        return type === 'bitcoin_image' || hasBlockHeight || hasBaseStems || hasBitcoinImage;
+      };
+
+      // Filter for BASE pack jobs with relaxed matching (status can still be processing)
+      const bitcoinJobs = allCompletedJobs.filter(isBasePackJob);
+      console.log('Filtered BASE pack jobs:', bitcoinJobs.length);
 
       setPacks(bitcoinJobs);
       setError(null);
@@ -103,6 +115,35 @@ const BASEPacks: React.FC = () => {
       console.error('Error fetching BASE packs:', err);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const syncPackStatuses = async () => {
+    try {
+      setIsSyncing(true);
+
+      const idsToCheck = packs
+        .filter((pack) => pack.type === 'bitcoin_image' || pack.stems_file)
+        .filter((pack) => pack.status !== 'completed' || !pack.outputs?.image_url)
+        .map((pack) => pack.job_id);
+
+      if (idsToCheck.length === 0) {
+        return;
+      }
+
+      await Promise.all(
+        idsToCheck.map(async (jobId) => {
+          try {
+            await fetch(`/api/jobs/${jobId}`);
+          } catch (err) {
+            console.warn('Failed to sync job', jobId, err);
+          }
+        })
+      );
+
+      await fetchBASEPacks();
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -300,12 +341,19 @@ const BASEPacks: React.FC = () => {
             <p className="text-base-content/70 mt-2">Bitcoin Audio Sample Engine - Generated Packs</p>
           </div>
           <div className="flex gap-3">
-            <a
-              href="/bitcoin-sample-engine"
+            <Link
+              to="../bitcoin-sample-engine"
               className="btn btn-primary"
             >
               Create Pack
-            </a>
+            </Link>
+            <button
+              onClick={syncPackStatuses}
+              className="btn btn-outline"
+              disabled={isSyncing}
+            >
+              {isSyncing ? 'Syncing…' : 'Sync Status'}
+            </button>
             <button 
               onClick={fetchBASEPacks}
               className="btn btn-ghost"
@@ -323,12 +371,12 @@ const BASEPacks: React.FC = () => {
               </svg>
             </div>
             <p className="text-base-content/60 text-lg mb-6">No B.A.S.E packs yet. Generate your first one!</p>
-            <a 
-              href="/bitcoin-sample-engine"
+            <Link 
+              to="../bitcoin-sample-engine"
               className="btn btn-primary btn-lg"
             >
               Create B.A.S.E Pack
-            </a>
+            </Link>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

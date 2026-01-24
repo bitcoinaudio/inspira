@@ -219,11 +219,12 @@ export default function InspiraLanding() {
       <section className="hero py-6">
         <div className="hero-content w-full max-w-6xl flex-col items-start gap-4">
           <div className="w-full">
-            <img src="/inspira-logo.png" alt="Inspira Logo" className="w-24 h-24" />
-            {/* <div className="badge badge-outline">Inspira</div> */}
-            <h1 className="mt-4 text-4xl md:text-5xl font-bold tracking-tight">
+            <div className="flex items-center gap-4">
+            <img src="/inspira-logo.png" alt="Inspira Logo" className="w-24 h-24" /> <h1 className="text-4xl md:text-5xl font-bold ">
              Input inspires output.
-            </h1>
+            </h1></div>
+            {/* <div className="badge badge-outline">Inspira</div> */}
+           
             <p className="mt-4 text-base md:text-lg text-base-content/70 max-w-3xl">
               Create, browse, and mix AI sample packs.
               Inspira is the audio workspace inside BitcoinAudio.ai. Start by generating a pack, browse

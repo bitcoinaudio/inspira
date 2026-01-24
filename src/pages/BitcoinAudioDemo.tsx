@@ -132,8 +132,7 @@ const BitcoinAudioDemo: React.FC = () => {
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-primary flex items-center gap-3">
-            <span className="text-4xl">₿</span>
-            Bitcoin Audio Engine Demo
+          Bitcoin Audio Sample Engine Demo
           </h1>
           <p className="text-base-content/70 mt-2">
             Web-based audio synthesis and visualization components built with React and Tone.js

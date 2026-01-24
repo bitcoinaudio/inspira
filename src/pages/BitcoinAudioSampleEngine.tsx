@@ -326,7 +326,7 @@ const BitcoinAudioSampleEngine: React.FC = () => {
             </p>
           </div>
           <a 
-            href="/base-packs"
+            href="base-packs"
             className="btn btn-outline gap-2"
           >
             🖼️ View Gallery
