@@ -9,6 +9,26 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  --ba-bg: 0 0% 4%;
+  --ba-bg-2: 0 0% 7%;
+  --ba-bg-3: 0 0% 10%;
+  --ba-fg: 0 0% 88%;
+  --ba-accent: 36 94% 54%;
+  --ba-accent-contrast: 0 0% 10%;
+}
+
+[data-theme="dark"],
+[data-theme="light"] {
+  --b1: var(--ba-bg);
+  --b2: var(--ba-bg-2);
+  --b3: var(--ba-bg-3);
+  --bc: var(--ba-fg);
+  --p: var(--ba-accent);
+  --pc: var(--ba-accent-contrast);
+  --s: 0 0% 12%;
+  --sc: var(--ba-fg);
+  --a: 36 94% 64%;
+  --ac: var(--ba-accent-contrast);
 }
 
 body {
@@ -17,6 +37,14 @@ body {
   min-height: 100vh;
   background-color: hsl(var(--b1));
   color: hsl(var(--bc));
+}
+
+a {
+  color: hsl(var(--p));
+}
+
+a:hover {
+  color: hsl(var(--a));
 }
 
 /* Bitcoin orange accent */
