@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 type LandingLink = {
@@ -14,12 +15,12 @@ type LandingLink = {
 
 const links: LandingLink[] = [
   {
-    title: 'AI Generator',
+    title: 'Sample Pack Generator',
     description: 'Generate new sample packs from a prompt, BPM, key, and stem settings.',
     bullets: ['Prompt → stems', 'BPM/key controls', 'Repeatable outputs'],
     to: 'ai-generator',
     cta: 'Generate a pack',
-    tone: 'primary',
+    tone: 'ghost',
     icon: 'spark',
     gradientFrom: 'from-primary/25',
     gradientTo: 'to-secondary/25',
@@ -30,7 +31,7 @@ const links: LandingLink[] = [
     bullets: ['Preview stems', 'Download packs', 'Open Studio instantly'],
     to: 'sample-packs',
     cta: 'Browse packs',
-    tone: 'secondary',
+    tone: 'ghost',
     icon: 'stack',
     gradientFrom: 'from-secondary/25',
     gradientTo: 'to-accent/25',
@@ -41,33 +42,23 @@ const links: LandingLink[] = [
     bullets: ['Curated collections', 'Fast experimentation', 'Studio-ready stems'],
     to: 'base-packs',
     cta: 'Explore B.A.S.E',
-    tone: 'accent',
+    tone: 'ghost',
     icon: 'mixer',
     gradientFrom: 'from-accent/25',
     gradientTo: 'to-primary/25',
   },
-  {
-    title: 'Bitcoin Audio',
-    description: 'Interactive Bitcoin-native audio demos and experiments.',
-    bullets: ['Bitcoin-driven sound', 'Interactive demos', 'Engine playground'],
-    to: 'bitcoin-audio',
-    cta: 'Open demo',
-    tone: 'ghost',
-    icon: 'bitcoin',
-    gradientFrom: 'from-warning/20',
-    gradientTo: 'to-primary/20',
-  },
-  {
-    title: 'Blockchain Audio',
-    description: 'Synth + signal experiments driven by blockchain data and on-chain patterns.',
-    bullets: ['On-chain patterns', 'Signal → synthesis', 'Visual + audio feedback'],
-    to: 'blockchain-audio',
-    cta: 'Open lab',
-    tone: 'ghost',
-    icon: 'network',
-    gradientFrom: 'from-info/20',
-    gradientTo: 'to-secondary/20',
-  },
+  // {
+  //   title: 'Bitcoin Audio',
+  //   description: 'Interactive Bitcoin-native audio demos and experiments.',
+  //   bullets: ['Bitcoin-driven sound', 'Interactive demos', 'Engine playground'],
+  //   to: 'bitcoin-audio',
+  //   cta: 'Open demo',
+  //   tone: 'ghost',
+  //   icon: 'bitcoin',
+  //   gradientFrom: 'from-warning/20',
+  //   gradientTo: 'to-primary/20',
+  // },
+ 
 ];
 
 function toneToButtonClass(tone: LandingLink['tone']) {
@@ -139,11 +130,21 @@ function Icon({ name }: { name: LandingLink['icon'] }) {
   }
 }
 
-function FeatureHero({ item, index }: { item: LandingLink; index: number }) {
+function FeatureHero({
+  item,
+  index,
+  previewImages,
+}: {
+  item: LandingLink;
+  index: number;
+  previewImages?: string[];
+}) {
   const reversed = index % 2 === 1;
+  const tiles = previewImages && previewImages.length > 0 ? previewImages.slice(0, 3) : [null, null, null];
+  const isSinglePreview = tiles.length === 1;
   return (
     <section className="py-6">
-      <div className={`grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch ${reversed ? 'lg:[&>*:first-child]:order-2' : ''}`}>
+      <div className={`grid grid-cols-1 lg:grid-cols-1 gap-6 items-stretch ${reversed ? 'lg:[&>*:first-child]:order-2' : ''}`}>
         <div className={`card bg-base-200 border border-base-300 overflow-hidden`}>
           <div className={`p-6 bg-gradient-to-br ${item.gradientFrom} ${item.gradientTo}`}>
             <div className="flex items-center gap-3">
@@ -162,19 +163,6 @@ function FeatureHero({ item, index }: { item: LandingLink; index: number }) {
                 </div>
               ))}
             </div>
-
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Link to={item.to} className={`btn ${toneToButtonClass(item.tone)}`}>
-                {item.cta}
-              </Link>
-              <Link to={item.to} className="btn btn-outline">
-                Learn more
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        <div className="card bg-base-200 border border-base-300">
           <div className="card-body">
             <div className="flex items-center justify-between">
               <div className="text-sm font-semibold">What you can do here</div>
@@ -190,48 +178,170 @@ function FeatureHero({ item, index }: { item: LandingLink; index: number }) {
               ))}
             </ul>
 
-            <div className="mt-5">
+           
               <div className="rounded-2xl border border-base-300 bg-base-300/40 p-5">
                 <div className="text-xs uppercase tracking-wide text-base-content/60">Preview</div>
-                <div className="mt-2 grid grid-cols-3 gap-3">
-                  {[0, 1, 2].map((i) => (
+                <div className={`mt-2 grid ${isSinglePreview ? 'grid-cols-1' : 'grid-cols-3'} gap-3`}>
+                  {tiles.map((src, i) => (
                     <div
                       key={i}
-                      className={`aspect-square rounded-xl border border-base-300 bg-gradient-to-br ${item.gradientFrom} ${item.gradientTo} opacity-80`}
-                    />
+                      className={`${isSinglePreview ? 'aspect-video' : 'aspect-square'} rounded-xl border border-base-300 bg-base-200 overflow-hidden`}
+                    >
+                      {src ? (
+                        <img
+                          src={src}
+                          alt={`${item.title} preview ${i + 1}`}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div
+                          className={`w-full h-full bg-gradient-to-br ${item.gradientFrom} ${item.gradientTo} opacity-80`}
+                        />
+                      )}
+                    </div>
                   ))}
                 </div>
                 <div className="mt-3 text-xs text-base-content/60">
                   Open <span className="font-semibold">{item.title}</span> to get the full experience.
                 </div>
               </div>
+            
+          </div>
+
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link to={item.to} className={`btn ${toneToButtonClass(item.tone)}`}>
+                {item.cta}
+              </Link>
+              <Link to={item.to} className="btn btn-outline">
+                Learn more
+              </Link>
             </div>
           </div>
         </div>
+
       </div>
     </section>
   );
 }
 
 export default function InspiraLanding() {
+  const [packPreviewImages, setPackPreviewImages] = useState<string[]>([]);
+  const [basePreviewImages, setBasePreviewImages] = useState<string[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchPackPreviews = async () => {
+      try {
+        const response = await fetch('/api/packs');
+        if (!response.ok) {
+          return;
+        }
+        const data = await response.json();
+        const packs = Array.isArray(data?.packs) ? data.packs : [];
+        const normalized = packs
+          .map((pack: { cover_url?: string | null }) => pack.cover_url)
+          .filter((coverUrl: string | null | undefined): coverUrl is string => Boolean(coverUrl))
+          .map((coverUrl: string) => {
+            if (coverUrl.startsWith('http')) return coverUrl;
+            return coverUrl.startsWith('/api') ? coverUrl : `/api${coverUrl}`;
+          });
+        if (isMounted) {
+          setPackPreviewImages(normalized.slice(0, 9));
+        }
+      } catch {
+        // Swallow errors to keep landing experience stable
+      }
+    };
+
+    const fetchBasePreviews = async () => {
+      try {
+        const PAGE_SIZE = 200;
+        const MAX_PAGES = 2;
+        let offset = 0;
+        let pagesFetched = 0;
+        const jobs: Array<{ type?: string; parameters?: { blockHeight?: number }; stems_file?: string; outputs?: { image_url?: string } }> = [];
+
+        while (pagesFetched < MAX_PAGES) {
+          const response = await fetch(`/api/jobs?limit=${PAGE_SIZE}&offset=${offset}`);
+          if (!response.ok) break;
+          const data = await response.json();
+          const pageResults = Array.isArray(data?.results) ? data.results : Array.isArray(data?.jobs) ? data.jobs : [];
+          jobs.push(...pageResults);
+          if (pageResults.length < PAGE_SIZE) break;
+          offset += PAGE_SIZE;
+          pagesFetched += 1;
+        }
+
+        const isBasePackJob = (job: { type?: string; parameters?: { blockHeight?: number }; stems_file?: string; outputs?: { image_url?: string } }) => {
+          const type = (job.type || '').toLowerCase();
+          const hasBlockHeight = typeof job.parameters?.blockHeight === 'number';
+          const stemsFile = job.stems_file || '';
+          const hasBaseStems = stemsFile.startsWith('base_stems_') || stemsFile.includes('base_stems_');
+          const imageUrl = job.outputs?.image_url || '';
+          const hasBitcoinImage = imageUrl.includes('bitcoin_');
+          return type === 'bitcoin_image' || hasBlockHeight || hasBaseStems || hasBitcoinImage;
+        };
+
+        const normalizeApiUrl = (maybePath?: string) => {
+          if (!maybePath) return undefined;
+          if (/^https?:\/\//i.test(maybePath)) return maybePath;
+          if (maybePath.startsWith('/api/')) return maybePath;
+          if (maybePath.startsWith('/files/')) return `/api${maybePath}`;
+          if (maybePath.startsWith('files/')) return `/api/${maybePath}`;
+          if (maybePath.startsWith('/')) return `/api${maybePath}`;
+          return `/api/${maybePath}`;
+        };
+
+        const normalized = jobs
+          .filter(isBasePackJob)
+          .map((job) => normalizeApiUrl(job.outputs?.image_url))
+          .filter((url): url is string => Boolean(url));
+
+        if (isMounted) {
+          setBasePreviewImages(normalized.slice(0, 6));
+        }
+      } catch {
+        // Swallow errors to keep landing experience stable
+      }
+    };
+
+    fetchPackPreviews();
+    fetchBasePreviews();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const aiGeneratorPreviews = useMemo(() => ['/images/spg.png'], []);
+  const samplePacksPreviews = useMemo(() => packPreviewImages.slice(3, 6), [packPreviewImages]);
+  const basePacksPreviews = useMemo(() => basePreviewImages.slice(0, 3), [basePreviewImages]);
+
   return (
     <div className="min-h-screen bg-base-100">
-      <section className="hero py-6">
-        <div className="hero-content w-full max-w-6xl flex-col items-start gap-4">
-          <div className="w-full">
-            <div className="flex items-center gap-4">
-            <img src="/inspira-logo.png" alt="Inspira Logo" className="w-24 h-24" /> <h1 className="text-4xl md:text-5xl font-bold ">
+      <section className="rounded-3xl border border-base-300 bg-gradient-to-br from-base-200 to-base-100 p-8 md:p-12 shadow-xl">
+          <div className="">
+          <div className="inline-flex items-center gap-2 rounded-full border border-base-300 bg-base-200/50 backdrop-blur-sm px-4 py-1.5 text-xs font-medium text-base-content/70 shadow-sm">
+            Tools • Creation • Output
+          </div>
+
+          <div className="mt-6 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          <img src="/inspira-logo.png" alt="Inspira Logo" className="w-64 h-64" /> 
+
+            <h1 className="text-4xl md:text-6xl font-bold ">
              Input inspires output.
-            </h1></div>
+            </h1>
+
+            </div>
             {/* <div className="badge badge-outline">Inspira</div> */}
            
-            <p className="mt-4 text-base md:text-lg text-base-content/70 max-w-3xl">
+          <p className="text-base-content/70 mt-5 text-lg md:text-xl leading-relaxed">
               Create, browse, and mix AI sample packs.
               Inspira is the audio workspace inside BitcoinAudio.ai. Start by generating a pack, browse
               existing packs, then open the Studio to mix stems and export a recording.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
-              <Link to="ai-generator" className="btn btn-primary">
+              <Link to="ai-generator" className="btn btn-outline">
                 Get started
               </Link>
               <Link to="sample-packs" className="btn btn-outline">
@@ -243,7 +353,20 @@ export default function InspiraLanding() {
           <div className="w-full">
             <div className="divider">Explore</div>
             {links.map((item, index) => (
-              <FeatureHero key={item.to} item={item} index={index} />
+              <FeatureHero
+                key={item.to}
+                item={item}
+                index={index}
+                previewImages={
+                  item.to === 'ai-generator'
+                    ? aiGeneratorPreviews
+                    : item.to === 'sample-packs'
+                      ? samplePacksPreviews
+                      : item.to === 'base-packs'
+                        ? basePacksPreviews
+                        : undefined
+                }
+              />
             ))}
           </div>
 
@@ -254,7 +377,7 @@ export default function InspiraLanding() {
               Studio.
             </div>
           </div>
-        </div>
+        
       </section>
     </div>
   );
