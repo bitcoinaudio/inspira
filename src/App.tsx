@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, NavLink } from 'react-router-dom';
+import { BrowserRouter as Router, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useUIStore } from './stores/uiStore';
 import { useEffect } from 'react';
@@ -8,6 +8,22 @@ import InspiraRoutes from './InspiraRoutes';
 import './App.css';
 
 const queryClient = new QueryClient();
+
+function InspiraQueryRedirect() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const packId = params.get('pack');
+
+    if (packId && !location.pathname.startsWith('/studio/')) {
+      navigate(`/studio/${encodeURIComponent(packId)}`, { replace: true });
+    }
+  }, [location, navigate]);
+
+  return null;
+}
 
 function App() {
   const { theme, setTheme } = useUIStore();
@@ -27,6 +43,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
+        <InspiraQueryRedirect />
         <div className="min-h-screen bg-base-100 text-base-content">
           {/* Navigation */}
           <nav className="navbar bg-base-200 shadow-lg sticky top-0 z-50">
