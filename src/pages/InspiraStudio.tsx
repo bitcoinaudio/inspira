@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import * as Tone from 'tone';
 import { useStudioSettings, useAudioExport } from '../hooks/useStudioSettings';
 
@@ -94,6 +94,7 @@ const InspiraStudio: React.FC = () => {
   const [stems, setStems] = useState<Stem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isBasePack, setIsBasePack] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [masterVolume, setMasterVolume] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
@@ -139,10 +140,29 @@ const InspiraStudio: React.FC = () => {
         const packData = allPacks.find((p: any) => p.job_id === packId);
 
         if (!packData) {
-          throw new Error(`Pack with ID ${packId} not found`);
+          const jobResponse = await fetch(`/api/jobs/${packId}`);
+          if (!jobResponse.ok) {
+            throw new Error(`Pack with ID ${packId} not found`);
+          }
+
+          const jobData = await jobResponse.json();
+          if (jobData?.type !== 'bitcoin_image') {
+            throw new Error(`Pack with ID ${packId} not found`);
+          }
+
+          setPack({
+            job_id: jobData.job_id || packId,
+            prompt: `B.A.S.E Pack #${jobData.parameters?.blockHeight ?? ''}`.trim(),
+            outputs: jobData.outputs || {},
+          });
+          setStems([]);
+          setIsBasePack(true);
+          setError(null);
+          return;
         }
 
         setPack(packData);
+        setIsBasePack(false);
 
         // Load stems
         const stemsArray: Stem[] = [];
@@ -723,6 +743,20 @@ const InspiraStudio: React.FC = () => {
           </button>
         </div>
 
+        {isBasePack && (
+          <div className="alert alert-info mb-6">
+            <div>
+              <div className="font-semibold">B.A.S.E pack detected</div>
+              <div className="text-sm">
+                These packs include cover art and stem note data. Studio mixing is available for audio packs.
+              </div>
+            </div>
+            <Link to="../base-packs" className="btn btn-sm btn-outline">
+              Back to B.A.S.E Packs
+            </Link>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Cover & Info */}
           <div className="lg:col-span-1 space-y-6">
@@ -996,7 +1030,7 @@ const InspiraStudio: React.FC = () => {
               <div className="space-y-3 max-h-96 overflow-y-auto">
                 {stems.length === 0 ? (
                   <div className="text-center py-8 opacity-50">
-                    <p>No stems loaded</p>
+                    <p>{isBasePack ? 'This B.A.S.E pack has no audio stems to mix in Studio.' : 'No stems loaded'}</p>
                   </div>
                 ) : (
                   stems.map((stem, index) => (

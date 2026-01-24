@@ -17,8 +17,8 @@ const BlockchainAudioDemo: React.FC = () => {
         {/* Page Header */}
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-primary flex items-center justify-center gap-3">
-            <span className="text-5xl">₿</span>
-            Blockchain Audio Engine
+            <span className="text-5xl"></span>
+            Bitcoin Audio 
           </h1>
           <p className="text-base-content/70 mt-2 max-w-2xl mx-auto">
             Transform Bitcoin blockchain data into music and visual art. 
