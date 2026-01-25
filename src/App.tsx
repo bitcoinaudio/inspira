@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useUIStore } from './stores/uiStore';
+import { useGatewayStatus } from './hooks/useGatewayStatus';
 import { useEffect } from 'react';
 
 import InspiraRoutes from './InspiraRoutes';
@@ -27,6 +28,7 @@ function InspiraQueryRedirect() {
 
 function App() {
   const { theme, setTheme } = useUIStore();
+  const { isConnected } = useGatewayStatus();
 
   useEffect(() => {
     // Apply theme globally (DaisyUI reads data-theme)
@@ -107,6 +109,20 @@ function App() {
             </div>
             
             <div className="navbar-end">
+              {/* Gateway Status Indicator */}
+              <div className="flex items-center gap-2 mr-4 px-3 py-1 rounded-lg bg-base-300" title={isConnected === null ? 'Checking gateway...' : isConnected ? 'Gateway connected' : 'Gateway disconnected'}>
+                <div className={`w-3 h-3 rounded-full ${
+                  isConnected === null 
+                    ? 'bg-gray-400 animate-pulse' 
+                    : isConnected 
+                    ? 'bg-green-500' 
+                    : 'bg-red-500'
+                }`}></div>
+                <span className="text-xs font-medium">
+                  {isConnected === null ? 'Checking...' : isConnected ? 'Connected' : 'Offline'}
+                </span>
+              </div>
+              
               <div className="dropdown dropdown-end">
                 <label tabIndex={0} className="btn btn-ghost btn-sm">
                   🎨 Theme
