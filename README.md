@@ -112,14 +112,14 @@ Professional browser-based audio mixing and recording workstation:
 # Install dependencies
 npm install
 
-# Start development server
+# Start development server (connects to localhost:3003)
 npm run dev
 
 # Start with network access (for mobile testing)
 npm run dev:network
 
-# Build for production
-npm run build
+# Build for production (with tunnel gateway URL)
+VITE_GATEWAY_SERVER_URL=https://samplepacker.bitcoinaudio.co npm run build
 
 # Preview production build
 npm run preview
@@ -130,8 +130,12 @@ npm run preview
 Create a `.env` (or `.env.local`) file in the `src/apps/inspira` directory:
 
 ```env
-# Where the Vite dev server proxies /api/* requests (standalone + embedded)
+# Development - local gateway
 VITE_GATEWAY_SERVER_URL=http://localhost:3003
+
+# Production - Cloudflare tunnel to local ComfyUI gateway
+# Built into the app at build time, not changeable at runtime
+# VITE_GATEWAY_SERVER_URL=https://samplepacker.bitcoinaudio.co
 
 # Optional override for the API client base URL.
 # Default is `/api` (recommended) which works with the Vite proxy.
@@ -142,10 +146,63 @@ VITE_GATEWAY_SERVER_URL=http://localhost:3003
 # VITE_BEATFEED_URL=https://api.beatfeed.xyz
 
 # Backend must be running for AI Generator and Sample Pack Browser
-# See: https://github.com/yourusername/samplepacker.ai
+# See: https://github.com/bitcoinaudio/samplepacker.ai
 ```
 
-## Project Structure
+## Production Deployment
+
+### Architecture
+
+**VPS (Caddy)** → **Cloudflare Tunnel** → **Local ComfyUI Gateway**
+
+1. **Frontend Serving**: Caddy serves Inspira from `/srv/sites/bitcoinaudio.ai/bitcoinaudio-ai-v1/`
+2. **Gateway Routing**: All `/api/*` requests proxied through Cloudflare tunnel
+3. **Tunnel URL**: `https://samplepacker.bitcoinaudio.co` → local gateway on port 3003
+4. **Built-in URL**: Gateway URL is baked into JavaScript at build time
+
+### Deployment Steps
+
+1. **Build with production gateway URL**:
+   ```bash
+   cd /home/rad/bitcoinaudio-ai-v100
+   VITE_GATEWAY_SERVER_URL=https://samplepacker.bitcoinaudio.co npm run build
+   cd src/apps/inspira
+   VITE_GATEWAY_SERVER_URL=https://samplepacker.bitcoinaudio.co npm run build
+   ```
+
+2. **Sync to Caddy serving directory**:
+   ```bash
+   rm -rf /srv/sites/bitcoinaudio.ai/bitcoinaudio-ai-v1
+   cp -r /home/rad/bitcoinaudio-ai-v100/dist /srv/sites/bitcoinaudio.ai/bitcoinaudio-ai-v1
+   cp -r /home/rad/bitcoinaudio-ai-v100/src/apps/inspira/dist/* /srv/sites/bitcoinaudio.ai/bitcoinaudio-ai-v1/apps/inspira/
+   ```
+
+3. **Purge Cloudflare cache** via dashboard or API
+
+4. **Verify deployment**:
+   ```bash
+   curl https://bitcoinaudio.ai
+   ```
+
+### Gateway Tunnel Setup
+
+The Cloudflare tunnel connects to the local ComfyUI gateway:
+- **Tunnel URL**: `https://samplepacker.bitcoinaudio.co`
+- **Local Target**: `localhost:3003` (ComfyUI SamplePacker gateway)
+- **Status**: The tunnel must be running for generation to work
+
+### Caddy Configuration
+
+Caddy routes both domains to the same files:
+```
+bitcoinaudio.ai inspira.bitcoinaudio.ai {
+  root * /srv/sites/bitcoinaudio.ai/bitcoinaudio-ai-v1
+  file_server
+  try_files {path} /index.html
+}
+```
+
+
 
 ```
 inspira/
@@ -197,15 +254,30 @@ Change theme via the theme selector in the navigation bar.
 
 ### Studio Not Loading Pack Data
 **Issue**: Studio page shows loading spinner indefinitely
-- **Solution**: Ensure gateway is running (`docker-compose ps` in samplepacker.ai folder)
+- **Solution**: Ensure gateway is running and Cloudflare tunnel is active
 - **Check**: Gateway must serve `/api/packs` endpoint with complete manifest data
-- **Verify**: `curl http://localhost:3003/packs` returns pack list with `audio_urls` array
+- **Dev**: `curl http://localhost:3003/packs` returns pack list with `audio_urls` array
+- **Prod**: `curl https://samplepacker.bitcoinaudio.co/packs` (through tunnel)
 
-### Stems Not Playing
+### Stems Not Playing in Studio
 **Issue**: Play button doesn't produce audio
 - **Solution**: Check browser console (F12) for audio context errors
 - **Note**: Audio context requires user interaction (click page to enable)
-- **Check**: Verify stem URLs are accessible: `curl http://localhost:3003/files/[filename]`
+- **Dev**: Verify stem URLs: `curl http://localhost:3003/files/[filename]`
+- **Prod**: Verify through tunnel: `curl https://samplepacker.bitcoinaudio.co/files/[filename]`
+
+### 502 Bad Gateway in Production
+**Issue**: Getting 502 errors when accessing Inspira features
+- **Solution**: Check Cloudflare tunnel status - verify tunnel is running
+- **Check**: `curl https://samplepacker.bitcoinaudio.co/health` should return 200
+- **Note**: Tunnel connects to local ComfyUI PC on port 3003
+- **Fix**: Restart Cloudflare tunnel connector on local machine
+
+### Gateway URL Hardcoded in Production
+**Issue**: Need to change gateway URL without rebuilding
+- **Note**: Gateway URL is baked into JavaScript at build time
+- **Solution**: Rebuild with new `VITE_GATEWAY_SERVER_URL` and redeploy
+- **Dev**: Set environment variable before `npm run build`
 
 ## Recent Fixes & Updates
 

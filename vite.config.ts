@@ -22,7 +22,7 @@ export default defineConfig(({ mode }) => {
     // },
     proxy: {
       "/api": {
-        target: env.VITE_GATEWAY_SERVER_URL || "http://localhost:3003",
+        target: env.VITE_GATEWAY_SERVER_URL || "https://samplepacker.bitcoinaudio.co ",
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path,

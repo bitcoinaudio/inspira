@@ -27,6 +27,7 @@ interface BASEPack {
 }
 
 const BASEPacks: React.FC = () => {
+  const apiBase = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
   const [packs, setPacks] = useState<BASEPack[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,12 +41,12 @@ const BASEPacks: React.FC = () => {
     if (!maybePath) return undefined;
     if (/^https?:\/\//i.test(maybePath)) return maybePath;
 
-    // Normalize so we never end up with /api/api/... and we always go through the Vite proxy.
-    if (maybePath.startsWith('/api/')) return maybePath;
-    if (maybePath.startsWith('/files/')) return `/api${maybePath}`;
-    if (maybePath.startsWith('files/')) return `/api/${maybePath}`;
-    if (maybePath.startsWith('/')) return `/api${maybePath}`;
-    return `/api/${maybePath}`;
+    // Normalize so we always prepend the configured API base and avoid double prefixes.
+    if (maybePath.startsWith('/api')) return `${apiBase}${maybePath.replace(/^\/api/, '') || ''}`;
+    if (maybePath.startsWith('/files')) return `${apiBase}${maybePath}`;
+    if (maybePath.startsWith('files/')) return `${apiBase}/${maybePath}`;
+    if (maybePath.startsWith('/')) return `${apiBase}${maybePath}`;
+    return `${apiBase}/${maybePath}`;
   };
 
   useEffect(() => {
@@ -73,7 +74,7 @@ const BASEPacks: React.FC = () => {
       const allCompletedJobs: BASEPack[] = [];
 
       while (pagesFetched < MAX_PAGES) {
-        const response = await fetch(`/api/jobs?limit=${PAGE_SIZE}&offset=${offset}`);
+        const response = await fetch(`${apiBase}/jobs?limit=${PAGE_SIZE}&offset=${offset}`);
         if (!response.ok) {
           throw new Error('Failed to fetch BASE packs');
         }
@@ -134,7 +135,7 @@ const BASEPacks: React.FC = () => {
       await Promise.all(
         idsToCheck.map(async (jobId) => {
           try {
-            await fetch(`/api/jobs/${jobId}`);
+            await fetch(`${apiBase}/jobs/${jobId}`);
           } catch (err) {
             console.warn('Failed to sync job', jobId, err);
           }
@@ -162,7 +163,7 @@ const BASEPacks: React.FC = () => {
     if (loadedStems[jobId]) return loadedStems[jobId];
     
     try {
-      const response = await fetch(`/api/files/${stemsFile}`);
+      const response = await fetch(`${apiBase}/files/${stemsFile}`);
       if (!response.ok) throw new Error('Failed to load stems');
       
       const data = await response.json();
@@ -279,7 +280,7 @@ const BASEPacks: React.FC = () => {
     if (pack.stems_file) {
       await new Promise(resolve => setTimeout(resolve, 500)); // Small delay between downloads
       const stemsLink = document.createElement('a');
-      stemsLink.href = `/api/files/${pack.stems_file}`;
+      stemsLink.href = `${apiBase}/files/${pack.stems_file}`;
       stemsLink.download = `BASE_block_${pack.parameters.blockHeight}_stems.json`;
       stemsLink.target = '_blank';
       document.body.appendChild(stemsLink);

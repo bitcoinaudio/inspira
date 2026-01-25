@@ -44,6 +44,7 @@ interface SamplePack {
 }
 
 const SamplePacks: React.FC = () => {
+  const apiBase = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
   const [packs, setPacks] = useState<SamplePack[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -59,19 +60,40 @@ const SamplePacks: React.FC = () => {
     fetchPacks();
   }, []);
 
+  const buildFileUrl = (raw?: string | null): string | null => {
+    if (!raw) return null;
+    if (/^https?:\/\//i.test(raw)) return raw;
+    if (raw.startsWith('/api')) return raw;
+    if (raw.startsWith('/files')) return `${apiBase}${raw}`;
+    if (raw.startsWith('files/')) return `${apiBase}/${raw}`;
+    return `${apiBase}/files/${raw.replace(/^\//, '')}`;
+  };
+
   const fetchPacks = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/packs');
+      console.log('[SamplePacks] Fetching packs from', `${apiBase}/packs`);
+      const response = await fetch(`${apiBase}/packs`);
+
       if (!response.ok) {
-        throw new Error('Failed to fetch sample packs');
+        const errorText = await response.text().catch(() => 'Unknown error');
+        console.error('[SamplePacks] HTTP Error:', response.status, errorText);
+        throw new Error(`Failed to fetch sample packs: HTTP ${response.status}`);
       }
+
       const data = await response.json();
-      setPacks(data.packs || []);
+      console.log('[SamplePacks] API Response:', data);
+
+      // Handle different response formats
+      const packsList = Array.isArray(data) ? data : (data.packs || data.results || []);
+      console.log('[SamplePacks] Parsed packs:', packsList.length, 'items');
+
+      setPacks(packsList);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-      console.error('Error fetching packs:', err);
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      console.error('[SamplePacks] Fetch error:', errorMessage, err);
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -95,7 +117,7 @@ const SamplePacks: React.FC = () => {
       // Start playing
       if (!audioElements[key]) {
         // Construct full URL with /api prefix
-        const fullUrl = audioPath.startsWith('/api') ? audioPath : `/api${audioPath}`;
+        const fullUrl = buildFileUrl(audioPath) || audioPath;
         const audio = new Audio(fullUrl);
         audio.crossOrigin = 'anonymous';
         audio.addEventListener('ended', () => {
@@ -121,7 +143,7 @@ const SamplePacks: React.FC = () => {
   };
 
   const downloadPack = (packId: string) => {
-    window.open(`/api/packs/${packId}/download`, '_blank');
+    window.open(`${apiBase}/packs/${packId}/download`, '_blank');
   };
 
   const formatDate = (dateString: string) => {
@@ -193,9 +215,9 @@ const SamplePacks: React.FC = () => {
               >
                 {/* Cover Image */}
                 <div className="relative aspect-square bg-base-300">
-                  {pack.cover_url ? (
+                  {buildFileUrl(pack.cover_url) ? (
                     <img 
-                      src={pack.cover_url.startsWith('/api') ? pack.cover_url : `/api${pack.cover_url}`}
+                      src={buildFileUrl(pack.cover_url) as string}
                       alt={pack.prompt}
                       className="w-full h-full object-cover"
                     />
@@ -242,7 +264,11 @@ const SamplePacks: React.FC = () => {
                   {pack.audio && pack.audio.length > 0 && (
                     <div className="mb-3 flex flex-wrap gap-1">
                       {pack.audio.map((audio, idx) => {
-                        const audioPath = `/api/files/${audio.path}`;
+                        const audioPath =
+                          buildFileUrl(audio.url) ||
+                          buildFileUrl(audio.path ? `/files/${audio.path}` : null) ||
+                          '';
+                        if (!audioPath) return null;
                         return (
                           <button
                             key={idx}
