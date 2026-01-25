@@ -78,13 +78,17 @@ const PublishToBeatfeedModal: React.FC<PublishToBeatfeedModalProps> = ({
       if (!response.ok) {
         let errorMessage = `Failed to publish: ${response.status} ${response.statusText}`;
         try {
-          const errorData = await response.json();
-          errorMessage = errorData.error || errorData.message || errorMessage;
-        } catch {
-          // Response might not be JSON
           const text = await response.text();
           console.error('Error response:', text);
-          if (text) errorMessage = text.substring(0, 200);
+          try {
+            const errorData = JSON.parse(text);
+            errorMessage = errorData.error || errorData.message || text.substring(0, 200);
+          } catch {
+            // Not JSON, use raw text
+            if (text) errorMessage = text.substring(0, 200);
+          }
+        } catch (e) {
+          console.error('Failed to read error response:', e);
         }
         throw new Error(errorMessage);
       }
