@@ -6,6 +6,9 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
 
+  const gatewayTarget = (env.VITE_GATEWAY_SERVER_URL || 'https://samplepacker.bitcoinaudio.co').trim()
+  const beatfeedTarget = (env.VITE_BEATFEED_URL || 'https://api.beatfeed.xyz').trim()
+
   return {
   plugins: [react(), tailwindcss()],
   optimizeDeps: {
@@ -22,13 +25,13 @@ export default defineConfig(({ mode }) => {
     // },
     proxy: {
       "/api": {
-        target: env.VITE_GATEWAY_SERVER_URL || "https://samplepacker.bitcoinaudio.co ",
+        target: gatewayTarget,
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path,
       },
       "/beatfeed-api": {
-        target: env.VITE_BEATFEED_URL || "https://api.beatfeed.xyz",
+        target: beatfeedTarget,
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/beatfeed-api/, '/api'),
