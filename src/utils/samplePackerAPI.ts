@@ -123,6 +123,16 @@ interface BeatfeedManifestV1 {
   };
 }
 
+export function normalizeApiUrl(maybePath?: string): string | undefined {
+  if (!maybePath) return undefined;
+  if (/^https?:\/\//i.test(maybePath)) return maybePath;
+  if (maybePath.startsWith('/api/')) return maybePath;
+  if (maybePath.startsWith('/files/')) return `/api${maybePath}`;
+  if (maybePath.startsWith('files/')) return `/api/${maybePath}`;
+  if (maybePath.startsWith('/')) return `/api${maybePath}`;
+  return `/api/${maybePath}`;
+}
+
 // Type guard to check if manifest is Beatfeed v1.0.0 format
 function isBeatfeedManifest(manifest: unknown): manifest is BeatfeedManifestV1 {
   return (

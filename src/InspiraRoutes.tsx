@@ -8,6 +8,8 @@ import BASEPacks from './pages/BASEPacks';
 import BlockchainAudioDemo from './pages/BlockchainAudioDemo';
 import SamplePacks from './pages/SamplePacks';
 import InspiraStudio from './pages/InspiraStudio';
+import SuperPack from './pages/SuperPack';
+import SuperPackGallery from './pages/SuperPackGallery';
 
 export default function InspiraRoutes() {
   return (
@@ -19,6 +21,8 @@ export default function InspiraRoutes() {
       <Route path="bitcoin-audio" element={<BitcoinAudioDemo />} />
       <Route path="bitcoin-sample-engine" element={<BitcoinAudioSampleEngine />} />
       <Route path="base-packs" element={<BASEPacks />} />
+      <Route path="superpack" element={<SuperPack />} />
+      <Route path="superpack-gallery" element={<SuperPackGallery />} />
       <Route path="blockchain-audio" element={<BlockchainAudioDemo />} />
       <Route path="*" element={<div>Inspira page not found</div>} />
     </Routes>

@@ -47,18 +47,28 @@ const links: LandingLink[] = [
     gradientFrom: 'from-accent/25',
     gradientTo: 'to-primary/25',
   },
-  // {
-  //   title: 'Bitcoin Audio',
-  //   description: 'Interactive Bitcoin-native audio demos and experiments.',
-  //   bullets: ['Bitcoin-driven sound', 'Interactive demos', 'Engine playground'],
-  //   to: 'bitcoin-audio',
-  //   cta: 'Open demo',
-  //   tone: 'ghost',
-  //   icon: 'bitcoin',
-  //   gradientFrom: 'from-warning/20',
-  //   gradientTo: 'to-primary/20',
-  // },
- 
+  {
+    title: 'SuperPack Creator',
+    description: 'Generate unique artwork, animation, and optional AI stems from Bitcoin block data.',
+    bullets: ['Block-driven visuals', 'Optional audio stems', 'Instant download'],
+    to: 'superpack',
+    cta: 'Create SuperPack',
+    tone: 'ghost',
+    icon: 'bitcoin',
+    gradientFrom: 'from-warning/20',
+    gradientTo: 'to-primary/20',
+  },
+  {
+    title: 'SuperPack Gallery',
+    description: 'Browse completed SuperPacks and download image, video, and available stems.',
+    bullets: ['Recent drops', 'Audio badge', 'Quick stem downloads'],
+    to: 'superpack-gallery',
+    cta: 'View Gallery',
+    tone: 'ghost',
+    icon: 'stack',
+    gradientFrom: 'from-primary/20',
+    gradientTo: 'to-secondary/20',
+  },
 ];
 
 function toneToButtonClass(tone: LandingLink['tone']) {
@@ -228,6 +238,7 @@ function FeatureHero({
 export default function InspiraLanding() {
   const [packPreviewImages, setPackPreviewImages] = useState<string[]>([]);
   const [basePreviewImages, setBasePreviewImages] = useState<string[]>([]);
+  const [superpackPreviewImages, setSuperpackPreviewImages] = useState<string[]>([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -306,8 +317,52 @@ export default function InspiraLanding() {
       }
     };
 
+    const fetchSuperpackPreviews = async () => {
+      try {
+        const PAGE_SIZE = 200;
+        const MAX_PAGES = 2;
+        let offset = 0;
+        let pagesFetched = 0;
+        const jobs: Array<{ type?: string; status?: string; outputs?: { image_url?: string } }> = [];
+
+        while (pagesFetched < MAX_PAGES) {
+          const response = await fetch(`/api/jobs?limit=${PAGE_SIZE}&offset=${offset}`);
+          if (!response.ok) break;
+          const data = await response.json();
+          const pageResults = Array.isArray(data?.results) ? data.results : Array.isArray(data?.jobs) ? data.jobs : [];
+          jobs.push(...pageResults);
+          if (pageResults.length < PAGE_SIZE) break;
+          offset += PAGE_SIZE;
+          pagesFetched += 1;
+        }
+
+        const normalizeApiUrl = (maybePath?: string) => {
+          if (!maybePath) return undefined;
+          if (/^https?:\/\//i.test(maybePath)) return maybePath;
+          if (maybePath.startsWith('/api/')) return maybePath;
+          if (maybePath.startsWith('/files/')) return `/api${maybePath}`;
+          if (maybePath.startsWith('files/')) return `/api/${maybePath}`;
+          if (maybePath.startsWith('/')) return `/api${maybePath}`;
+          return `/api/${maybePath}`;
+        };
+
+        const normalized = jobs
+          .filter((job) => (job.type || '').toLowerCase() === 'superpack')
+          .filter((job) => (job.status || '').toLowerCase() === 'completed')
+          .map((job) => normalizeApiUrl(job.outputs?.image_url))
+          .filter((url): url is string => Boolean(url));
+
+        if (isMounted) {
+          setSuperpackPreviewImages(normalized.slice(0, 6));
+        }
+      } catch {
+        // Swallow errors to keep landing experience stable
+      }
+    };
+
     fetchPackPreviews();
     fetchBasePreviews();
+    fetchSuperpackPreviews();
     return () => {
       isMounted = false;
     };
@@ -316,6 +371,7 @@ export default function InspiraLanding() {
   const aiGeneratorPreviews = useMemo(() => ['/images/spg.png'], []);
   const samplePacksPreviews = useMemo(() => packPreviewImages.slice(3, 6), [packPreviewImages]);
   const basePacksPreviews = useMemo(() => basePreviewImages.slice(0, 3), [basePreviewImages]);
+  const superpackPreviews = useMemo(() => superpackPreviewImages.slice(0, 3), [superpackPreviewImages]);
 
   return (
     <div className="min-h-screen bg-base-100">
@@ -364,6 +420,8 @@ export default function InspiraLanding() {
                       ? samplePacksPreviews
                       : item.to === 'base-packs'
                         ? basePacksPreviews
+                          : item.to === 'superpack' || item.to === 'superpack-gallery'
+                            ? superpackPreviews
                         : undefined
                 }
               />
