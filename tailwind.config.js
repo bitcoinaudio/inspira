@@ -10,6 +10,7 @@ export default {
         bitcoin: '#f7931a',
       },
       fontFamily: {
+        sans: ['Orbitron', 'system-ui', 'sans-serif'],
         orbitron: ['Orbitron', 'monospace'],
       },
     },

@@ -1,8 +1,9 @@
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
 @plugin "daisyui";
 
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Orbitron', Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
   font-synthesis: none;
@@ -12,13 +13,12 @@
   --ba-bg: 0 0% 4%;
   --ba-bg-2: 0 0% 7%;
   --ba-bg-3: 0 0% 10%;
-  --ba-fg: 0 0% 88%;
+  --ba-fg: 34 37% 94%;
   --ba-accent: 36 94% 54%;
   --ba-accent-contrast: 0 0% 10%;
 }
 
-[data-theme="dark"],
-[data-theme="light"] {
+[data-theme="dark"] {
   --b1: var(--ba-bg);
   --b2: var(--ba-bg-2);
   --b3: var(--ba-bg-3);
@@ -29,6 +29,19 @@
   --sc: var(--ba-fg);
   --a: 36 94% 64%;
   --ac: var(--ba-accent-contrast);
+}
+
+[data-theme="light"] {
+  --b1: 34 100% 97%;
+  --b2: 34 60% 90%;
+  --b3: 34 45% 84%;
+  --bc: 0 0% 7%;
+  --p: 0 0% 8%;
+  --pc: 34 100% 96%;
+  --s: 34 47% 84%;
+  --sc: 0 0% 12%;
+  --a: 36 94% 54%;
+  --ac: 0 0% 10%;
 }
 
 body {
