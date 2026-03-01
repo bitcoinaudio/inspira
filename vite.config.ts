@@ -16,7 +16,8 @@ export default defineConfig(({ mode }) => {
   },
   server: {
     host: '0.0.0.0',
-    port: 5173,
+    port: 5176,
+    strictPort: true,
     // Note: COOP/COEP headers disabled for development compatibility
     // Enable these in production if SharedArrayBuffer is needed for Tone.js AudioWorklet
     // headers: {
