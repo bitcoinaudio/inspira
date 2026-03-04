@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useUIStore } from './stores/uiStore';
 import { useGatewayStatus } from './hooks/useGatewayStatus';
 import { useEffect } from 'react';
+import WalletConnectButton from './components/WalletConnectButton';
 
 import InspiraRoutes from './InspiraRoutes';
 
@@ -132,6 +133,9 @@ function App() {
                   <li><button onClick={() => setTheme('light')}>☀️ Light</button></li>
                 
                 </ul>
+              </div>
+              <div className="ml-2">
+                <WalletConnectButton />
               </div>
             </div>
           </nav>

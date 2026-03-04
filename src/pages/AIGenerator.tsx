@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useSamplePackGenerator, type GenerationRequest } from '../hooks/useSamplePackGenerator';
 import { useBlockchainStore } from '../stores/blockchainStore';
 import { samplePackerAPI } from '../utils/samplePackerAPI';
+import { useWallet } from '../context/WalletContext';
+import WalletRequiredNotice from '../components/WalletRequiredNotice';
 
 const AIGenerator: React.FC = () => {
+  const { isWalletConnected } = useWallet();
   const {
     isGenerating,
     currentJob,
@@ -123,7 +126,7 @@ const AIGenerator: React.FC = () => {
   };
 
   const handleGenerate = async () => {
-    if (!prompt.trim()) return;
+    if (!isWalletConnected || !prompt.trim()) return;
 
     const request: GenerationRequest = {
       prompt: prompt.trim(),
@@ -414,7 +417,7 @@ const AIGenerator: React.FC = () => {
             <div className="flex gap-4 justify-center mb-8">
               <button
                 onClick={handleGenerate}
-                disabled={!prompt.trim() || isGenerating}
+                disabled={!isWalletConnected || !prompt.trim() || isGenerating}
                 className="btn btn-primary"
               >
                 {isGenerating ? 'Generating...' : '🎵 Generate Music'}
@@ -429,6 +432,10 @@ const AIGenerator: React.FC = () => {
                 </button>
               )}
             </div>
+
+            {!isWalletConnected && (
+              <WalletRequiredNotice action="Generate/Publish" className="mb-8" />
+            )}
 
             {/* Progress */}
             {isGenerating && (

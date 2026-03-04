@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import PublishToBeatfeedModal from '../components/PublishToBeatfeedModal';
+import { useWallet } from '../context/WalletContext';
+import WalletRequiredNotice from '../components/WalletRequiredNotice';
 
 interface AudioFile {
   filename: string;
@@ -44,6 +46,7 @@ interface SamplePack {
 }
 
 const SamplePacks: React.FC = () => {
+  const { isWalletConnected } = useWallet();
   const apiBase = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
   const [packs, setPacks] = useState<SamplePack[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -309,14 +312,21 @@ const SamplePacks: React.FC = () => {
                       </button>
                     </div>
                     <button
-                      onClick={() => setPublishModal({ isOpen: true, packId: pack.job_id, packTitle: pack.prompt })}
+                      onClick={() => {
+                        if (!isWalletConnected) return;
+                        setPublishModal({ isOpen: true, packId: pack.job_id, packTitle: pack.prompt });
+                      }}
                       className="btn btn-warning w-full"
+                      disabled={!isWalletConnected}
                     >
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                       Publish to Beatfeed
                     </button>
+                    {!isWalletConnected && (
+                      <WalletRequiredNotice action="Generate/Publish" className="mt-1 text-xs" />
+                    )}
                   </div>
                 </div>
               </div>
@@ -330,6 +340,7 @@ const SamplePacks: React.FC = () => {
         packId={publishModal.packId}
         packTitle={publishModal.packTitle}
         isOpen={publishModal.isOpen}
+        walletConnected={isWalletConnected}
         onClose={() => setPublishModal({ ...publishModal, isOpen: false })}
         onSuccess={() => {
           // Optionally refresh packs list

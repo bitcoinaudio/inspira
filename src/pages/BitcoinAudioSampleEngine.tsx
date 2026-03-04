@@ -2,6 +2,8 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import * as Tone from 'tone';
 import { useBlockchainStore } from '../stores/blockchainStore';
 import { samplePackerAPI } from '../utils/samplePackerAPI';
+import { useWallet } from '../context/WalletContext';
+import WalletRequiredNotice from '../components/WalletRequiredNotice';
 
 interface Stem {
   id: number;
@@ -14,6 +16,7 @@ interface Stem {
 }
 
 const BitcoinAudioSampleEngine: React.FC = () => {
+  const { isWalletConnected } = useWallet();
   const { currentBlock, fetchAndSetBlock, isLoading } = useBlockchainStore();
   const [blockHeight, setBlockHeight] = useState<number>(0);
   const [dataSource, setDataSource] = useState<'merkleRoot' | 'hash'>('merkleRoot');
@@ -126,6 +129,10 @@ const BitcoinAudioSampleEngine: React.FC = () => {
 
   // Generate image from color grid
   const handleGenerateImage = useCallback(async () => {
+    if (!isWalletConnected) {
+      alert('Connect your wallet to generate images.');
+      return;
+    }
     if (!canvasRef.current || colorGrid.length === 0 || stems.length === 0) return;
 
     setIsGeneratingImage(true);
@@ -172,7 +179,7 @@ const BitcoinAudioSampleEngine: React.FC = () => {
     } finally {
       setIsGeneratingImage(false);
     }
-  }, [colorGrid, currentBlock, blockHeight, dataSource]);
+  }, [isWalletConnected, colorGrid, currentBlock, blockHeight, dataSource]);
 
   // Play a stem's pattern
   const playStem = useCallback(async (stem: Stem) => {
@@ -414,7 +421,7 @@ const BitcoinAudioSampleEngine: React.FC = () => {
                   <h2 className="text-xl font-semibold">Interactive Color Grid</h2>
                   <button
                     onClick={handleGenerateImage}
-                    disabled={isGeneratingImage || colorGrid.length === 0}
+                    disabled={!isWalletConnected || isGeneratingImage || colorGrid.length === 0}
                     className="btn btn-sm btn-primary"
                   >
                     {isGeneratingImage ? (
@@ -466,6 +473,9 @@ const BitcoinAudioSampleEngine: React.FC = () => {
                 <p className="text-xs text-base-content/60 mt-3">
                   8x8 grid (64 cells) - Click any cell to hear its note
                 </p>
+                {!isWalletConnected && (
+                  <WalletRequiredNotice action="Generate/Publish" className="mt-2 text-xs" />
+                )}
                 <p className="text-xs text-base-content/60">
                   Source: {dataSource === 'merkleRoot' ? 'Merkle Root' : 'Block Hash'}
                 </p>

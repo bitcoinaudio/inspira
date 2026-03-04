@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import WalletRequiredNotice from './WalletRequiredNotice';
 
 interface PublishToBeatfeedModalProps {
   packId: string;
   packTitle: string;
   isOpen: boolean;
+  walletConnected: boolean;
   onClose: () => void;
   onSuccess?: (result: any) => void;
 }
@@ -12,6 +14,7 @@ const PublishToBeatfeedModal: React.FC<PublishToBeatfeedModalProps> = ({
   packId,
   packTitle,
   isOpen,
+  walletConnected,
   onClose,
   onSuccess
 }) => {
@@ -30,6 +33,11 @@ const PublishToBeatfeedModal: React.FC<PublishToBeatfeedModalProps> = ({
   });
 
   const handlePublish = async () => {
+    if (!walletConnected) {
+      setError('Connect your wallet to publish.');
+      return;
+    }
+
     try {
       setIsPublishing(true);
       setError(null);
@@ -189,6 +197,10 @@ const PublishToBeatfeedModal: React.FC<PublishToBeatfeedModalProps> = ({
                 )}
 
                 {/* Form Fields */}
+                {!walletConnected && (
+                  <WalletRequiredNotice action="Generate/Publish" />
+                )}
+
                 <div className="form-control">
                   <label className="label">
                     <span className="label-text">Creator Handle</span>
@@ -300,7 +312,7 @@ const PublishToBeatfeedModal: React.FC<PublishToBeatfeedModalProps> = ({
                   <button
                     onClick={handlePublish}
                     className="btn btn-primary flex-1"
-                    disabled={isPublishing}
+                    disabled={!walletConnected || isPublishing}
                   >
                     {isPublishing ? (
                       <>
