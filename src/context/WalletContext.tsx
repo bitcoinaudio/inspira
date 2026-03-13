@@ -4,6 +4,9 @@ type WalletProviderName = "unisat" | "xverse" | null;
 
 declare global {
   interface Window {
+    BitcoinProvider?: unknown;
+    bitcoin?: unknown;
+    XverseProviders?: unknown;
     unisat?: {
       getAccounts?: () => Promise<string[]>;
       requestAccounts?: () => Promise<string[]>;

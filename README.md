@@ -127,7 +127,7 @@ npm run preview
 
 ### Environment Variables
 
-Create a `.env` (or `.env.local`) file in the `src/apps/inspira` directory:
+Create a `.env` (or `.env.local`) file in the repo root:
 
 ```env
 # Development - local gateway
@@ -153,10 +153,10 @@ VITE_GATEWAY_SERVER_URL=http://localhost:3003
 
 ### Architecture
 
-**VPS (Caddy)** → **Cloudflare Tunnel** → **Local ComfyUI Gateway**
+**inspira.bitcoinaudio.ai (Caddy)** → **Cloudflare Tunnel** → **Local ComfyUI Gateway**
 
-1. **Frontend Serving**: Caddy serves Inspira from `/srv/sites/bitcoinaudio.ai/bitcoinaudio-ai-v1/`
-2. **Gateway Routing**: All `/api/*` requests proxied through Cloudflare tunnel
+1. **Frontend Serving**: Caddy serves the standalone Inspira build from `/srv/sites/inspira.bitcoinaudio.ai/`
+2. **Gateway Routing**: All `/api/*` requests proxy through the SamplePacker tunnel
 3. **Tunnel URL**: `https://samplepacker.bitcoinaudio.co` → local gateway on port 3003
 4. **Built-in URL**: Gateway URL is baked into JavaScript at build time
 
@@ -164,24 +164,21 @@ VITE_GATEWAY_SERVER_URL=http://localhost:3003
 
 1. **Build with production gateway URL**:
    ```bash
-   cd /home/rad/bitcoinaudio-ai-v100
-   VITE_GATEWAY_SERVER_URL=https://samplepacker.bitcoinaudio.co npm run build
-   cd src/apps/inspira
+   cd /home/rad/inspira.bitcoinaudio.ai
    VITE_GATEWAY_SERVER_URL=https://samplepacker.bitcoinaudio.co npm run build
    ```
 
 2. **Sync to Caddy serving directory**:
    ```bash
-   rm -rf /srv/sites/bitcoinaudio.ai/bitcoinaudio-ai-v1
-   cp -r /home/rad/bitcoinaudio-ai-v100/dist /srv/sites/bitcoinaudio.ai/bitcoinaudio-ai-v1
-   cp -r /home/rad/bitcoinaudio-ai-v100/src/apps/inspira/dist/* /srv/sites/bitcoinaudio.ai/bitcoinaudio-ai-v1/apps/inspira/
+   rm -rf /srv/sites/inspira.bitcoinaudio.ai/*
+   cp -r /home/rad/inspira.bitcoinaudio.ai/dist/* /srv/sites/inspira.bitcoinaudio.ai/
    ```
 
 3. **Purge Cloudflare cache** via dashboard or API
 
 4. **Verify deployment**:
    ```bash
-   curl https://bitcoinaudio.ai
+   curl https://inspira.bitcoinaudio.ai
    ```
 
 ### Gateway Tunnel Setup
@@ -193,10 +190,10 @@ The Cloudflare tunnel connects to the local ComfyUI gateway:
 
 ### Caddy Configuration
 
-Caddy routes both domains to the same files:
+Serve the standalone app from its own domain and document root:
 ```
-bitcoinaudio.ai inspira.bitcoinaudio.ai {
-  root * /srv/sites/bitcoinaudio.ai/bitcoinaudio-ai-v1
+inspira.bitcoinaudio.ai {
+   root * /srv/sites/inspira.bitcoinaudio.ai
   file_server
   try_files {path} /index.html
 }

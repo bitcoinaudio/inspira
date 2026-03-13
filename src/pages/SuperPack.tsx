@@ -217,7 +217,7 @@ export default function SuperPack() {
             </div>
 
             <div className="flex items-center gap-3">
-              <Link to="/inspira/superpack-gallery" className="btn btn-outline btn-sm">
+              <Link to="/superpack-gallery" className="btn btn-outline btn-sm">
                 View Gallery
               </Link>
               <div className="badge badge-outline">Inspira</div>
@@ -391,7 +391,7 @@ export default function SuperPack() {
                     <div className="card-body p-4">
                       <div className="text-xs text-base-content/70">Block {job.blockHeight}</div>
                       <div className="flex items-center gap-2 mt-2">
-                        <Link to="/inspira/superpack-gallery" className="btn btn-xs btn-outline">
+                        <Link to="/superpack-gallery" className="btn btn-xs btn-outline">
                           Open Gallery
                         </Link>
                         {job.outputs?.audio_stems && Object.keys(job.outputs.audio_stems).length > 0 && (

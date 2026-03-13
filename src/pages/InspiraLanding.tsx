@@ -393,7 +393,7 @@ export default function InspiraLanding() {
            
           <p className="text-base-content/70 mt-5 text-lg md:text-xl leading-relaxed">
               Create, browse, and mix AI sample packs.
-              Inspira is the audio workspace inside BitcoinAudio.ai. Start by generating a pack, browse
+              Inspira is the standalone audio workspace for the BitcoinAudio ecosystem. Start by generating a pack, browse
               existing packs, then open the Studio to mix stems and export a recording.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">

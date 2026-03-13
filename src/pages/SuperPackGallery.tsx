@@ -141,7 +141,7 @@ export default function SuperPackGallery() {
             <p className="text-base-content/70 mt-2">Browse completed SuperPacks and download visuals, video, and stems.</p>
           </div>
           <div className="flex items-center gap-2">
-            <Link to="/inspira/superpack" className="btn btn-outline btn-sm">
+            <Link to="/superpack" className="btn btn-outline btn-sm">
               Create SuperPack
             </Link>
             <button onClick={fetchJobs} className="btn btn-ghost btn-sm">
