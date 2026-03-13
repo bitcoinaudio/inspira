@@ -18,6 +18,8 @@ const PublishToBeatfeedModal: React.FC<PublishToBeatfeedModalProps> = ({
   onClose,
   onSuccess
 }) => {
+  const localManifestBaseUrl = (import.meta.env.VITE_LOCAL_MANIFEST_BASE_URL || 'http://host.docker.internal:3003/api').replace(/\/$/, '');
+  const localBeatfeedUrl = (import.meta.env.VITE_LOCAL_BEATFEED_URL || 'http://api.beatfeed.local/api').replace(/\/$/, '');
   const [isPublishing, setIsPublishing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -53,13 +55,13 @@ const PublishToBeatfeedModal: React.FC<PublishToBeatfeedModalProps> = ({
       // Use tunnel URL for remote beatfeed.xyz, or host.docker.internal for local Docker
       const manifestUrl = formData.use_tunnel
         ? `https://samplepacker.bitcoinaudio.co/api/packs/${packId}/manifest`
-        : `http://host.docker.internal:3003/api/packs/${packId}/manifest`;
+        : `${localManifestBaseUrl}/packs/${packId}/manifest`;
 
       // Publish to Beatfeed
       // Use Vite proxy (/beatfeed-api -> https://api.beatfeed.xyz) for live, or local Docker for dev
       const beatfeedUrl = formData.use_tunnel
-        ? '/beatfeed-api'  // Proxied to https://api.beatfeed.xyz/api via Vite
-        : 'http://api.beatfeed.local/api';  // Local Docker beatfeed
+        ? '/beatfeed-api'  // Proxied to the configured live Beatfeed target via Vite
+        : localBeatfeedUrl;
       
       console.log('Publishing to Beatfeed:', {
         beatfeedUrl,

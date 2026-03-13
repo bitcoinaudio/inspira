@@ -8,6 +8,7 @@ export default defineConfig(({ mode }) => {
 
   const gatewayTarget = (env.VITE_GATEWAY_SERVER_URL || 'https://samplepacker.bitcoinaudio.co').trim()
   const beatfeedTarget = (env.VITE_BEATFEED_URL || 'https://api.beatfeed.xyz').trim()
+  const allowedHosts = ['inspira.local', 'inspira.bitcoinaudio.local', 'localhost', '127.0.0.1']
 
   return {
   plugins: [react(), tailwindcss()],
@@ -18,6 +19,7 @@ export default defineConfig(({ mode }) => {
     host: '0.0.0.0',
     port: 5176,
     strictPort: true,
+    allowedHosts,
     // Note: COOP/COEP headers disabled for development compatibility
     // Enable these in production if SharedArrayBuffer is needed for Tone.js AudioWorklet
     // headers: {
