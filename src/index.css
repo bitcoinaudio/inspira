@@ -1,21 +1,25 @@
-@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800&family=Space+Mono:wght@400;700&family=Work+Sans:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
 @plugin "daisyui";
 
 :root {
-  font-family: 'Orbitron', Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Work Sans', system-ui, sans-serif;
   line-height: 1.5;
   font-weight: 400;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  --ba-bg: 0 0% 4%;
-  --ba-bg-2: 0 0% 7%;
-  --ba-bg-3: 0 0% 10%;
-  --ba-fg: 34 37% 94%;
+  --ba-bg: 0 0% 10%;
+  --ba-bg-2: 0 0% 14%;
+  --ba-bg-3: 0 0% 18%;
+  --ba-fg: 34 37% 97%;
+  --ba-muted: 32 18% 70%;
   --ba-accent: 36 94% 54%;
   --ba-accent-contrast: 0 0% 10%;
+  --font-display: 'Orbitron', system-ui, sans-serif;
+  --font-body: 'Work Sans', system-ui, sans-serif;
+  --font-mono: 'Space Mono', monospace;
 }
 
 [data-theme="dark"] {
@@ -25,7 +29,7 @@
   --bc: var(--ba-fg);
   --p: var(--ba-accent);
   --pc: var(--ba-accent-contrast);
-  --s: 0 0% 12%;
+  --s: 0 0% 20%;
   --sc: var(--ba-fg);
   --a: 36 94% 64%;
   --ac: var(--ba-accent-contrast);
@@ -33,23 +37,40 @@
 
 [data-theme="light"] {
   --b1: 34 100% 97%;
-  --b2: 34 60% 90%;
-  --b3: 34 45% 84%;
-  --bc: 0 0% 7%;
-  --p: 0 0% 8%;
-  --pc: 34 100% 96%;
+  --b2: 34 60% 92%;
+  --b3: 34 45% 85%;
+  --bc: 0 0% 8%;
+  --p: 36 94% 54%;
+  --pc: 0 0% 10%;
   --s: 34 47% 84%;
   --sc: 0 0% 12%;
   --a: 36 94% 54%;
   --ac: 0 0% 10%;
 }
 
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background-color: hsl(var(--b1));
+  background:
+    radial-gradient(circle at top left, rgba(247, 147, 26, 0.14), transparent 26%),
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.06), transparent 18%),
+    hsl(var(--b1));
   color: hsl(var(--bc));
+}
+
+a,
+button,
+input,
+textarea,
+select {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
 }
 
 a {
@@ -60,7 +81,20 @@ a:hover {
   color: hsl(var(--a));
 }
 
-/* Bitcoin orange accent */
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  letter-spacing: -0.03em;
+}
+
+code,
+pre,
+.font-mono {
+  font-family: var(--font-mono);
+}
+
 .text-bitcoin {
   color: #f7931a;
 }
@@ -73,7 +107,6 @@ a:hover {
   border-color: #f7931a;
 }
 
-/* Audio visualizer styles */
 .oscilloscope-container,
 .fft-container,
 .block-visualizer {
@@ -82,9 +115,68 @@ a:hover {
   align-items: center;
 }
 
-/* Smooth transitions */
-* {
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
+.inspira-shell {
+  background:
+    radial-gradient(circle at top left, rgba(247, 147, 26, 0.16), transparent 28%),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, hsl(var(--b1)) 98%, white 2%),
+      color-mix(in srgb, hsl(var(--b2)) 98%, black 2%)
+    );
+}
+
+.inspira-grid {
+  background-image:
+    linear-gradient(rgba(247, 147, 26, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(247, 147, 26, 0.05) 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-position: center;
+}
+
+.inspira-panel {
+  background: linear-gradient(180deg, rgba(35, 35, 35, 0.92), rgba(23, 23, 23, 0.96));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.22);
+}
+
+[data-theme="light"] .inspira-panel {
+  background: linear-gradient(180deg, rgba(255, 249, 242, 0.92), rgba(245, 241, 235, 0.96));
+  border-color: rgba(17, 17, 17, 0.08);
+}
+
+[data-theme="light"] .inspira-shell {
+  background:
+    radial-gradient(circle at top left, rgba(247, 147, 26, 0.12), transparent 28%),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, hsl(var(--b1)) 98%, white 2%),
+      color-mix(in srgb, hsl(var(--b2)) 98%, black 1%)
+    );
+}
+
+.inspira-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(247, 147, 26, 0.24);
+  background: rgba(247, 147, 26, 0.1);
+  padding: 0.45rem 0.95rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: hsl(var(--p));
+}
+
+.inspira-metric {
+  border-radius: 1.4rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 1rem 1.1rem;
+}
+
+[data-theme="light"] .inspira-metric {
+  border-color: rgba(17, 17, 17, 0.08);
+  background: rgba(255, 255, 255, 0.72);
 }

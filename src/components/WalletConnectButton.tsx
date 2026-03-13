@@ -26,7 +26,7 @@ export default function WalletConnectButton() {
       <button
         type="button"
         onClick={disconnectWallet}
-        className="text-xs px-3 py-2 rounded-lg border border-base-300 bg-base-200 hover:bg-base-300 transition"
+        className="rounded-full border border-base-300/80 bg-base-100/75 px-4 py-2 text-sm font-semibold text-base-content hover:border-primary hover:text-primary"
       >
         {shortAddress}
       </button>
@@ -39,7 +39,7 @@ export default function WalletConnectButton() {
         type="button"
         tabIndex={0}
         disabled={isBusy}
-        className="text-xs px-3 py-2 rounded-lg border border-primary/30 bg-primary/10 hover:bg-primary/20 transition"
+        className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-content shadow-lg shadow-primary/20"
       >
         {isBusy ? "Connecting..." : "Connect Wallet"}
       </button>

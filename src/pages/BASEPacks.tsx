@@ -303,11 +303,14 @@ const BASEPacks: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-base-100 p-8">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl font-bold text-primary mb-8">Bitcoin Audio Sample Engine (B.A.S.E) Packs</h1>
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-base-content"></div>
+      <div className="inspira-shell min-h-screen px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="inspira-panel rounded-[32px] p-8 sm:p-10">
+            <span className="inspira-kicker mb-6">Bitcoin Audio Engine</span>
+            <h1 className="text-4xl font-bold text-primary sm:text-5xl">B.A.S.E Packs</h1>
+            <div className="flex h-64 items-center justify-center">
+              <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-t-2 border-base-content"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -316,17 +319,20 @@ const BASEPacks: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-base-100 p-8">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl font-bold text-primary mb-8">B.A.S.E Packs</h1>
-          <div className="alert alert-error flex flex-col items-center gap-3">
-            <span>{error}</span>
+      <div className="inspira-shell min-h-screen px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="inspira-panel rounded-[32px] p-8 sm:p-10">
+            <span className="inspira-kicker mb-6">Bitcoin Audio Engine</span>
+            <h1 className="text-4xl font-bold text-primary sm:text-5xl">B.A.S.E Packs</h1>
+            <div className="mt-8 flex flex-col items-center gap-3 rounded-[24px] border border-error/30 bg-error/10 p-5 text-center">
+              <span>{error}</span>
             <button 
               onClick={fetchBASEPacks}
-              className="btn btn-sm btn-outline"
+              className="btn btn-sm rounded-full border border-primary/30 bg-transparent text-primary hover:-translate-y-0.5 hover:border-primary hover:bg-primary hover:text-primary-content"
             >
               Retry
             </button>
+            </div>
           </div>
         </div>
       </div>
@@ -334,30 +340,33 @@ const BASEPacks: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-base-100 p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-4xl font-bold text-primary">B.A.S.E Packs</h1>
-            <p className="text-base-content/70 mt-2">Bitcoin Audio Sample Engine - Generated Packs</p>
+    <div className="inspira-shell min-h-screen px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-8 flex flex-col gap-5 rounded-[32px] border border-white/10 bg-white/[0.03] p-6 sm:p-8 lg:flex-row lg:items-end lg:justify-between">
+          <div className="space-y-4">
+            <span className="inspira-kicker">Bitcoin Audio Engine</span>
+            <div>
+              <h1 className="text-4xl font-bold text-primary sm:text-5xl">B.A.S.E Packs</h1>
+              <p className="mt-3 max-w-2xl text-base text-base-content/72 sm:text-lg">Browse block-derived cover art, generated stems, and open packs directly in Studio.</p>
+            </div>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
             <Link
               to="../bitcoin-sample-engine"
-              className="btn btn-primary"
+              className="btn rounded-full border-none bg-primary px-5 text-primary-content shadow-[0_12px_30px_rgba(247,147,26,0.24)] hover:-translate-y-0.5 hover:bg-primary"
             >
               Create Pack
             </Link>
             <button
               onClick={syncPackStatuses}
-              className="btn btn-outline"
+              className="btn rounded-full border border-primary/30 bg-transparent text-primary hover:-translate-y-0.5 hover:border-primary hover:bg-primary hover:text-primary-content"
               disabled={isSyncing}
             >
-              {isSyncing ? 'Syncing…' : 'Sync Status'}
+              {isSyncing ? 'Syncing...' : 'Sync Status'}
             </button>
             <button 
               onClick={fetchBASEPacks}
-              className="btn btn-ghost"
+              className="btn rounded-full border border-white/10 bg-white/5 hover:-translate-y-0.5 hover:border-primary/40 hover:bg-primary/10"
             >
               Refresh
             </button>
@@ -374,17 +383,17 @@ const BASEPacks: React.FC = () => {
             <p className="text-base-content/60 text-lg mb-6">No B.A.S.E packs yet. Generate your first one!</p>
             <Link 
               to="../bitcoin-sample-engine"
-              className="btn btn-primary btn-lg"
+              className="btn btn-lg rounded-full border-none bg-primary px-6 text-primary-content shadow-[0_12px_30px_rgba(247,147,26,0.24)] hover:-translate-y-0.5 hover:bg-primary"
             >
               Create B.A.S.E Pack
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {packs.map((pack) => (
               <div 
                 key={pack.job_id} 
-                className="card bg-base-200 shadow-xl border border-base-300 hover:shadow-2xl transition"
+                className="inspira-panel overflow-hidden rounded-[30px] border border-white/10 transition hover:-translate-y-1"
               >
                 {/* Cover Image */}
                 <div className="relative aspect-square bg-base-300">
@@ -409,7 +418,7 @@ const BASEPacks: React.FC = () => {
                 </div>
 
                 {/* Content */}
-                <div className="card-body p-4">
+                <div className="p-4">
                   {/* Title */}
                   <h3 className="text-base-content font-semibold mb-2">
                     Bitcoin Block #{pack.parameters.blockHeight}
@@ -425,7 +434,7 @@ const BASEPacks: React.FC = () => {
                     </div>
                     {pack.parameters.stemCount && (
                       <div className="flex items-center gap-2">
-                        <span>🎵 {pack.parameters.stemCount} Audio Stems</span>
+                        <span>{pack.parameters.stemCount} Audio Stems</span>
                       </div>
                     )}
                     <div className="flex items-center gap-2">
@@ -450,7 +459,7 @@ const BASEPacks: React.FC = () => {
                     <div className="mb-3">
                       <button
                         onClick={() => toggleExpanded(pack)}
-                        className="btn btn-sm btn-outline w-full justify-between"
+                        className="btn btn-sm w-full justify-between rounded-full border border-white/10 bg-white/5 hover:border-primary/35 hover:bg-primary/10"
                       >
                         <span className="flex items-center gap-2">
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -473,7 +482,7 @@ const BASEPacks: React.FC = () => {
                           {loadedStems[pack.job_id].map((stem, index) => (
                             <div 
                               key={index}
-                              className="flex items-center gap-2 px-2 py-1 bg-base-300 rounded text-xs"
+                              className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-2 py-1 text-xs"
                             >
                               <button
                                 onClick={() => toggleStemPlayback(pack, index)}
@@ -503,7 +512,7 @@ const BASEPacks: React.FC = () => {
                   <div className="flex gap-2">
                     <Link
                       to={`../studio/${pack.job_id}`}
-                      className="btn btn-secondary flex-1"
+                      className="btn flex-1 rounded-full border border-white/10 bg-white/5 hover:border-primary/35 hover:bg-primary/10"
                     >
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -512,7 +521,7 @@ const BASEPacks: React.FC = () => {
                     </Link>
                     <button
                       onClick={() => downloadPackage(pack)}
-                      className="btn btn-primary flex-1"
+                      className="btn flex-1 rounded-full border-none bg-primary text-primary-content shadow-[0_12px_30px_rgba(247,147,26,0.24)] hover:-translate-y-0.5 hover:bg-primary"
                     >
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />

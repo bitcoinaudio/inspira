@@ -164,21 +164,37 @@ const AIGenerator: React.FC = () => {
   };
 
   return (
-    <div className="p-6 min-h-screen bg-base-100">
-      <div className="max-w-6xl mx-auto">
-        <div className="card bg-base-200 shadow-lg">
-          <div className="card-body">
-            <h1 className="text-3xl font-bold text-primary mb-2 text-center">
-              Sample Pack Generator
-            </h1>
-            <p className="text-base-content opacity-70 text-center mb-6">
-              Create custom music and sample packs with AI
-            </p>
+    <div className="inspira-shell min-h-screen px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-8 flex flex-col gap-5 rounded-[32px] border border-white/10 bg-white/[0.03] p-6 sm:p-8 lg:flex-row lg:items-end lg:justify-between">
+          <div className="space-y-4">
+            <span className="inspira-kicker">Pack Generator</span>
+            <div>
+              <h1 className="text-4xl font-bold text-primary sm:text-5xl">
+                Sample Pack Generator
+              </h1>
+              <p className="mt-3 max-w-2xl text-base text-base-content/72 sm:text-lg">
+                Create custom music, stems, and cover art from a single guided generation flow.
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:w-auto">
+            <div className="inspira-metric">
+              <div className="text-xs uppercase tracking-[0.18em] text-base-content/45">Wallet</div>
+              <div className="mt-2 text-sm font-semibold">{isWalletConnected ? 'Connected' : 'Required'}</div>
+            </div>
+            <div className="inspira-metric">
+              <div className="text-xs uppercase tracking-[0.18em] text-base-content/45">Mode</div>
+              <div className="mt-2 text-sm font-semibold">AI Assisted</div>
+            </div>
+          </div>
+        </div>
+        <div className="inspira-panel rounded-[32px] p-6 sm:p-8">
             
             {/* Generation Form */}
             <div className="space-y-6 mb-8">
               {/* Bitcoin Block BNS Section */}
-              <div className="bg-base-300 rounded-lg p-4">
+              <div className="rounded-[28px] border border-white/10 bg-white/[0.04] p-5">
                 <div className="flex items-center gap-2 mb-3">
                    <h3 className="text-lg font-semibold">Blockchain Inspiration (BNS)</h3>
                 </div>
@@ -194,16 +210,16 @@ const AIGenerator: React.FC = () => {
                       value={blockHeightInput}
                       onChange={(e) => setBlockHeightInput(e.target.value)}
                       placeholder={currentBlock ? String(currentBlock.height) : "Enter block height..."}
-                      className="input input-bordered w-full bg-base-100"
+                      className="input input-bordered w-full border-white/10 bg-white/5"
                       disabled={isLoadingBlock}
                     />
                   </div>
-                  <button 
+                  <button
                     onClick={handleFetchBlock}
-                    className={`btn btn-primary ${isLoadingBlock ? 'loading' : ''}`}
+                    className={`btn rounded-full border-none bg-primary text-primary-content shadow-[0_12px_30px_rgba(247,147,26,0.24)] hover:-translate-y-0.5 hover:bg-primary ${isLoadingBlock ? 'loading' : ''}`}
                     disabled={isLoadingBlock || !blockHeightInput}
                   >
-                    {isLoadingBlock ? 'Loading...' : '🔮 Generate BNS Prompt'}
+                    {isLoadingBlock ? 'Loading...' : 'Generate BNS Prompt'}
                   </button>
                 </div>
                 {currentBlock && (
@@ -214,9 +230,9 @@ const AIGenerator: React.FC = () => {
                     </div>
                     
                     {bnsMatches.length > 0 && (
-                      <div className="bg-base-100 rounded-lg p-3">
+                      <div className="rounded-[22px] border border-white/10 bg-black/20 p-3">
                         <div className="flex items-center gap-2 mb-2">
-                          <span className="text-sm font-semibold">🔤 BNS Word Matches</span>
+                          <span className="text-sm font-semibold">BNS Word Matches</span>
                           <span className="text-xs text-base-content/50">(sorted by least shifts)</span>
                         </div>
                         <div className="flex flex-wrap gap-2">
@@ -229,11 +245,11 @@ const AIGenerator: React.FC = () => {
                                 match.totalShift <= 6 ? 'badge-secondary' :
                                 'badge-ghost'
                               }`}
-                              title={`Window: "${match.window}" → Shifts: [${match.shifts.join(', ')}]`}
+                              title={`Window: "${match.window}" -> Shifts: [${match.shifts.join(', ')}]`}
                             >
                               <span className="font-bold">{match.word}</span>
                               <span className="opacity-70 text-xs">
-                                {match.exactMatch ? '✓' : `±${match.totalShift}`}
+                                {match.exactMatch ? 'Exact' : `Shift ${match.totalShift}`}
                               </span>
                             </div>
                           ))}
@@ -244,7 +260,7 @@ const AIGenerator: React.FC = () => {
                       </div>
                     )}
                     
-                    <div className="text-success font-medium text-sm">✓ BNS prompt generated and applied below</div>
+                    <div className="text-success font-medium text-sm">BNS prompt generated and applied below</div>
                   </div>
                 )}
               </div>
@@ -257,7 +273,7 @@ const AIGenerator: React.FC = () => {
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   placeholder="Describe the style, mood, and characteristics of your music..."
-                  className="textarea textarea-bordered w-full bg-base-300 text-base-content placeholder:text-base-content placeholder:opacity-50"
+                  className="textarea textarea-bordered w-full border-white/10 bg-white/5 text-base-content placeholder:text-base-content placeholder:opacity-50"
                   rows={3}
                   disabled={isGenerating}
                 />
@@ -269,7 +285,7 @@ const AIGenerator: React.FC = () => {
                       <button
                         key={idx}
                         onClick={() => setPrompt(samplePrompt)}
-                        className="btn btn-xs btn-ghost disabled:opacity-50"
+                        className="btn btn-xs rounded-full border border-white/10 bg-white/5 disabled:opacity-50"
                         disabled={isGenerating}
                       >
                         {samplePrompt}
@@ -289,7 +305,7 @@ const AIGenerator: React.FC = () => {
                     max="200"
                     value={bpm}
                     onChange={(e) => setBpm(parseInt(e.target.value))}
-                    className="input input-bordered w-full bg-base-300"
+                    className="input input-bordered w-full border-white/10 bg-white/5"
                     disabled={isGenerating}
                   />
                 </div>
@@ -299,7 +315,7 @@ const AIGenerator: React.FC = () => {
                   <select
                     value={key}
                     onChange={(e) => setKey(e.target.value)}
-                    className="select select-bordered w-full bg-base-300"
+                    className="select select-bordered w-full border-white/10 bg-white/5"
                     disabled={isGenerating}
                   >
                     {keyOptions.map(k => (
@@ -316,7 +332,7 @@ const AIGenerator: React.FC = () => {
                     max="32"
                     value={duration}
                     onChange={(e) => setDuration(parseInt(e.target.value))}
-                    className="input input-bordered w-full bg-base-300"
+                    className="input input-bordered w-full border-white/10 bg-white/5"
                     disabled={isGenerating}
                   />
                 </div>
@@ -326,7 +342,7 @@ const AIGenerator: React.FC = () => {
                   <select
                     value={stems}
                     onChange={(e) => setStems(Number.parseInt(e.target.value, 10))}
-                    className="select select-bordered w-full bg-base-300"
+                    className="select select-bordered w-full border-white/10 bg-white/5"
                     disabled={isGenerating}
                   >
                     {stemOptions.map(opt => (
@@ -348,7 +364,7 @@ const AIGenerator: React.FC = () => {
                   <select
                     value={workflow}
                     onChange={(e) => setWorkflow(e.target.value)}
-                    className="select select-bordered w-full bg-base-300"
+                    className="select select-bordered w-full border-white/10 bg-white/5"
                     disabled={isGenerating || isLoadingWorkflows}
                   >
                     {isLoadingWorkflows ? (
@@ -383,7 +399,7 @@ const AIGenerator: React.FC = () => {
                   <select
                     value={modelSize}
                     onChange={(e) => setModelSize(e.target.value as 'small' | 'medium')}
-                    className="select select-bordered w-full bg-base-300"
+                    className="select select-bordered w-full border-white/10 bg-white/5"
                     disabled={isGenerating}
                   >
                     <option value="small">Small (Faster)</option>
@@ -418,15 +434,15 @@ const AIGenerator: React.FC = () => {
               <button
                 onClick={handleGenerate}
                 disabled={!isWalletConnected || !prompt.trim() || isGenerating}
-                className="btn btn-primary"
+                className="btn rounded-full border-none bg-primary px-6 text-primary-content shadow-[0_12px_30px_rgba(247,147,26,0.24)] hover:-translate-y-0.5 hover:bg-primary"
               >
-                {isGenerating ? 'Generating...' : '🎵 Generate Music'}
+                {isGenerating ? 'Generating...' : 'Generate Music'}
               </button>
 
               {isGenerating && (
                 <button
                   onClick={cancelGeneration}
-                  className="btn btn-error"
+                  className="btn rounded-full"
                 >
                   Cancel
                 </button>
@@ -483,7 +499,7 @@ const AIGenerator: React.FC = () => {
 
             {/* Error Display */}
             {error && (
-              <div className="alert alert-error mb-8">
+              <div className="mb-8 rounded-[24px] border border-error/30 bg-error/10 p-4">
                 <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 <span><strong>Error:</strong> {error}</span>
               </div>
@@ -491,9 +507,9 @@ const AIGenerator: React.FC = () => {
 
             {/* Results */}
             {generationResult && (
-              <div className="card bg-base-300 shadow-lg">
-                <div className="card-body">
-                  <h3 className="card-title text-accent mb-4">✨ Generation Complete!</h3>
+              <div className="rounded-[28px] border border-primary/20 bg-primary/10 p-5 shadow-[0_24px_80px_rgba(0,0,0,0.22)]">
+                <div>
+                  <h3 className="mb-4 text-2xl font-bold text-primary">Generation Complete</h3>
                   
                   <div className="grid md:grid-cols-2 gap-6">
                     {/* Left Column: Cover Art & Parameters */}
@@ -501,7 +517,7 @@ const AIGenerator: React.FC = () => {
                       {generationResult.manifest?.cover && (
                         <div>
                           <h4 className="text-base-content font-medium mb-2">Cover Art:</h4>
-                          <div className="bg-base-100 rounded-lg p-2">
+                          <div className="rounded-[22px] border border-white/10 bg-black/20 p-2">
                             <img
                               src={`/api/files/${generationResult.manifest.cover.path}`}
                               alt="Generated cover art"
@@ -513,7 +529,7 @@ const AIGenerator: React.FC = () => {
 
                       <div>
                         <h4 className="text-base-content font-medium mb-2">Parameters:</h4>
-                        <div className="bg-base-100 p-4 rounded-lg text-sm space-y-2">
+                        <div className="rounded-[22px] border border-white/10 bg-black/20 p-4 text-sm space-y-2">
                           <div className="text-base-content opacity-70">
                             <div className="mb-2">
                               <span className="font-medium">Prompt:</span>
@@ -532,9 +548,9 @@ const AIGenerator: React.FC = () => {
                       <div className="space-y-2">
                         <button
                           onClick={handleDownloadPackage}
-                          className="btn btn-primary w-full"
+                          className="btn w-full rounded-full border-none bg-primary text-primary-content shadow-[0_12px_30px_rgba(247,147,26,0.24)] hover:-translate-y-0.5 hover:bg-primary"
                         >
-                          📦 Download Product Package
+                          Download Product Package
                         </button>
 
                         <div className="text-xs text-base-content opacity-60 text-center mt-2">
@@ -555,8 +571,8 @@ const AIGenerator: React.FC = () => {
                       <h4 className="text-base-content font-medium mb-2">Generated Tracks:</h4>
                       <div className="space-y-2">
                         {generationResult.manifest?.audio.map((audio, idx) => (
-                          <div key={idx} className="card bg-base-100 shadow-sm">
-                            <div className="card-body p-3">
+                          <div key={idx} className="rounded-[22px] border border-white/10 bg-black/20 p-3 shadow-sm">
+                            <div>
                               <div className="flex items-center justify-between mb-2">
                                 <div>
                                   <div className="text-base-content font-medium">{audio.stem}</div>
@@ -582,7 +598,6 @@ const AIGenerator: React.FC = () => {
             )}
           </div>
         </div>
-      </div>
     </div>
   );
 };

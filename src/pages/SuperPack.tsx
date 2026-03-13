@@ -203,21 +203,21 @@ export default function SuperPack() {
   };
 
   return (
-    <div className="min-h-screen bg-base-100">
-      <section className="rounded-3xl border border-base-300 bg-gradient-to-br from-base-200 to-base-100 p-6 md:p-10 shadow-xl">
-        <div className="max-w-5xl mx-auto">
-          <div className="inline-flex items-center gap-2 rounded-full border border-base-300 bg-base-200/50 px-4 py-1.5 text-xs font-medium text-base-content/70 shadow-sm">
+    <div className="inspira-shell min-h-screen px-4 py-8 sm:px-6 lg:px-8">
+      <section className="mx-auto rounded-[32px] border border-white/10 bg-white/[0.03] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.22)] md:p-10">
+        <div className="mx-auto max-w-5xl">
+          <div className="inspira-kicker">
             SuperPack • Bitcoin Blocks
           </div>
 
           <div className="mt-6 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div>
-              <h1 className="text-4xl md:text-5xl font-bold">SuperPack Creator</h1>
-              <p className="mt-2 text-base-content/70 text-lg">Generate artwork and animation from Bitcoin block data.</p>
+              <h1 className="text-4xl font-bold text-primary md:text-5xl">SuperPack Creator</h1>
+              <p className="mt-3 text-lg text-base-content/70">Generate artwork, motion, and optional audio layers from Bitcoin block data.</p>
             </div>
 
             <div className="flex items-center gap-3">
-              <Link to="/superpack-gallery" className="btn btn-outline btn-sm">
+              <Link to="/superpack-gallery" className="btn btn-sm rounded-full border border-primary/30 bg-transparent text-primary hover:-translate-y-0.5 hover:border-primary hover:bg-primary hover:text-primary-content">
                 View Gallery
               </Link>
               <div className="badge badge-outline">Inspira</div>
@@ -225,8 +225,8 @@ export default function SuperPack() {
           </div>
 
           <div className="mt-8 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] gap-6">
-            <div className="card bg-base-200 border border-base-300">
-              <div className="card-body">
+            <div className="inspira-panel rounded-[30px] border border-white/10">
+              <div className="p-6">
                 <div className="text-sm font-semibold">Create a SuperPack</div>
                 <p className="text-sm text-base-content/70">Enter a block height and render a new pack.</p>
 
@@ -242,7 +242,7 @@ export default function SuperPack() {
                       disabled={isCreating}
                       min="0"
                       placeholder="Enter block height (e.g., 840000)"
-                      className="input input-bordered w-full"
+                      className="input input-bordered w-full border-white/10 bg-white/5"
                     />
                   </div>
 
@@ -254,14 +254,14 @@ export default function SuperPack() {
                       <button
                         type="button"
                         onClick={() => setDataSource('hash')}
-                        className={`btn join-item flex-1 ${dataSource === 'hash' ? 'btn-active' : ''}`}
+                        className={`btn join-item flex-1 ${dataSource === 'hash' ? 'btn-active bg-primary border-primary text-primary-content' : 'border-white/10 bg-white/5'}`}
                       >
                         Block Hash
                       </button>
                       <button
                         type="button"
                         onClick={() => setDataSource('merkle_root')}
-                        className={`btn join-item flex-1 ${dataSource === 'merkle_root' ? 'btn-active' : ''}`}
+                        className={`btn join-item flex-1 ${dataSource === 'merkle_root' ? 'btn-active bg-primary border-primary text-primary-content' : 'border-white/10 bg-white/5'}`}
                       >
                         Merkle Root
                       </button>
@@ -279,30 +279,30 @@ export default function SuperPack() {
                       <span className="label-text">Include AI-Generated Audio Stems</span>
                     </label>
                     <p className="text-sm opacity-75 mt-2 ml-8">
-                      {includeAudio ? '✓ Audio generation enabled (5-10 min)' : 'ℹ Audio disabled (2-5 min)'}
+                      {includeAudio ? 'Audio generation enabled (5-10 min)' : 'Audio disabled (2-5 min)'}
                     </p>
                   </div>
                 </div>
 
                 {error && (
-                  <div className="alert alert-error mt-4">
+                  <div className="mt-4 rounded-[22px] border border-error/30 bg-error/10 p-4">
                     <span>{error}</span>
                   </div>
                 )}
 
                 <div className="mt-4 flex flex-wrap gap-3">
-                  <button onClick={createSuperPack} disabled={!isBlockHeightValid || isCreating} className="btn btn-primary">
+                  <button onClick={createSuperPack} disabled={!isBlockHeightValid || isCreating} className="btn rounded-full border-none bg-primary text-primary-content shadow-[0_12px_30px_rgba(247,147,26,0.24)] hover:-translate-y-0.5 hover:bg-primary">
                     {isCreating ? 'Creating SuperPack...' : 'Create SuperPack'}
                   </button>
-                  <button onClick={reset} className="btn btn-ghost" disabled={isCreating && !processingJob}>
+                  <button onClick={reset} className="btn rounded-full border border-white/10 bg-white/5 hover:-translate-y-0.5 hover:border-primary/40 hover:bg-primary/10" disabled={isCreating && !processingJob}>
                     Reset
                   </button>
                 </div>
               </div>
             </div>
 
-            <div className="card bg-base-200 border border-base-300">
-              <div className="card-body">
+            <div className="inspira-panel rounded-[30px] border border-white/10">
+              <div className="p-6">
                 <div className="text-sm font-semibold">Status</div>
                 {!processingJob && !completedJob && <p className="text-sm text-base-content/70">Ready when you are.</p>}
 
@@ -330,7 +330,7 @@ export default function SuperPack() {
                   <div className="mt-4 space-y-3">
                     <div className="badge badge-success">Completed</div>
                     <div className="text-xs text-base-content/70">
-                      Block {completedJob.blockHeight} • Source {completedJob.dataSource === 'merkle_root' ? 'Merkle Root' : 'Hash'}
+                      Block {completedJob.blockHeight} | Source {completedJob.dataSource === 'merkle_root' ? 'Merkle Root' : 'Hash'}
                     </div>
 
                     {completedJob.outputs?.image_url && (
@@ -348,7 +348,7 @@ export default function SuperPack() {
                 )}
 
                 {completedJob?.status === 'failed' && (
-                  <div className="alert alert-error mt-4">
+                  <div className="mt-4 rounded-[22px] border border-error/30 bg-error/10 p-4">
                     <span>{completedJob.error || 'Render failed'}</span>
                   </div>
                 )}
@@ -357,8 +357,8 @@ export default function SuperPack() {
           </div>
 
           {orderedStems.length > 0 && (
-            <div className="mt-6 card bg-base-200 border border-base-300">
-              <div className="card-body">
+            <div className="mt-6 inspira-panel rounded-[30px] border border-white/10">
+              <div className="p-6">
                 <div className="text-sm font-semibold">Audio Stems</div>
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                   {orderedStems.map(([stem, url]) => (
@@ -382,13 +382,13 @@ export default function SuperPack() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {recentJobs.map((job) => (
-                  <div key={job.job_id} className="card bg-base-200 border border-base-300 overflow-hidden">
+                  <div key={job.job_id} className="inspira-panel overflow-hidden rounded-[28px] border border-white/10">
                     <div className="aspect-video bg-base-300">
                       {job.outputs?.image_url ? (
                         <img src={job.outputs.image_url} alt={`SuperPack ${job.job_id}`} className="w-full h-full object-cover" loading="lazy" />
                       ) : null}
                     </div>
-                    <div className="card-body p-4">
+                    <div className="p-4">
                       <div className="text-xs text-base-content/70">Block {job.blockHeight}</div>
                       <div className="flex items-center gap-2 mt-2">
                         <Link to="/superpack-gallery" className="btn btn-xs btn-outline">

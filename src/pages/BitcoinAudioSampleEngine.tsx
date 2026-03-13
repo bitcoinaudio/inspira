@@ -319,30 +319,30 @@ const BitcoinAudioSampleEngine: React.FC = () => {
   }, [stems]);
 
   return (
-    <div className="min-h-screen bg-base-100 p-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="inspira-shell min-h-screen px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl">
         {/* Header */}
-        <div className="mb-8 flex items-start justify-between">
+        <div className="mb-8 flex flex-col gap-5 rounded-[32px] border border-white/10 bg-white/[0.03] p-6 sm:p-8 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h1 className="text-4xl font-bold text-primary flex items-center gap-3">
-              <span className="text-5xl">₿</span>
+            <span className="inspira-kicker">Bitcoin Audio Engine</span>
+            <h1 className="mt-4 text-4xl font-bold text-primary sm:text-5xl">
               Bitcoin Audio Sample Engine (B.A.S.E)
             </h1>
-            <p className="text-base-content/70 mt-2">
+            <p className="mt-3 text-base text-base-content/72 sm:text-lg">
               Transform Bitcoin blockchain data into unique generative audio stems and visual art
             </p>
           </div>
           <a 
             href="base-packs"
-            className="btn btn-outline gap-2"
+            className="btn rounded-full border border-primary/30 bg-transparent text-primary hover:-translate-y-0.5 hover:border-primary hover:bg-primary hover:text-primary-content"
           >
-            🖼️ View Gallery
+            View Gallery
           </a>
         </div>
 
         {/* Input Section */}
         <section className="mb-8">
-          <div className="card bg-base-200 p-6">
+          <div className="inspira-panel rounded-[30px] p-6">
             <h2 className="text-xl font-semibold mb-4">Block Input</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -363,7 +363,7 @@ const BitcoinAudioSampleEngine: React.FC = () => {
                   <button
                     onClick={handleFetchBlock}
                     disabled={isLoading}
-                    className="btn btn-primary"
+                    className="btn rounded-full border-none bg-primary text-primary-content shadow-[0_12px_30px_rgba(247,147,26,0.24)] hover:-translate-y-0.5 hover:bg-primary"
                   >
                     {isLoading ? (
                       <span className="loading loading-spinner loading-sm"></span>
@@ -416,13 +416,13 @@ const BitcoinAudioSampleEngine: React.FC = () => {
           <section className="mb-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Color Grid */}
-              <div className="card bg-base-200 p-6">
+              <div className="inspira-panel rounded-[30px] p-6">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-xl font-semibold">Interactive Color Grid</h2>
                   <button
                     onClick={handleGenerateImage}
                     disabled={!isWalletConnected || isGeneratingImage || colorGrid.length === 0}
-                    className="btn btn-sm btn-primary"
+                    className="btn btn-sm rounded-full border-none bg-primary text-primary-content shadow-[0_12px_30px_rgba(247,147,26,0.24)] hover:-translate-y-0.5 hover:bg-primary"
                   >
                     {isGeneratingImage ? (
                       <>
@@ -430,7 +430,7 @@ const BitcoinAudioSampleEngine: React.FC = () => {
                         Generating...
                       </>
                     ) : (
-                      '🎨 Generate Image'
+                      'Generate Image'
                     )}
                   </button>
                 </div>
@@ -490,7 +490,7 @@ const BitcoinAudioSampleEngine: React.FC = () => {
               </div>
 
               {/* Generated Image */}
-              <div className="card bg-base-200 p-6">
+              <div className="inspira-panel rounded-[30px] p-6">
                 <h2 className="text-xl font-semibold mb-4">Generated Artwork</h2>
                 {generatedImageUrl ? (
                   <img
@@ -500,7 +500,7 @@ const BitcoinAudioSampleEngine: React.FC = () => {
                     crossOrigin="anonymous"
                   />
                 ) : (
-                  <div className="w-full aspect-square bg-base-300 rounded-lg flex items-center justify-center">
+                  <div className="flex w-full aspect-square items-center justify-center rounded-[24px] border border-white/10 bg-black/20">
                     <p className="text-base-content/50">Click "Generate Image" to create artwork</p>
                   </div>
                 )}
@@ -512,21 +512,21 @@ const BitcoinAudioSampleEngine: React.FC = () => {
         {/* Audio Stems Section */}
         {currentBlock && isInitialized && (
           <section className="mb-8">
-            <div className="card bg-base-200 p-6">
+            <div className="inspira-panel rounded-[30px] p-6">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-semibold">8 Audio Stems</h2>
                 <button
                   onClick={playAllStems}
                   className={`btn ${isPlaying ? 'btn-error' : 'btn-success'}`}
                 >
-                  {isPlaying ? '⏸️ Stop All' : '▶️ Play All'}
+                  {isPlaying ? 'Stop All' : 'Play All'}
                 </button>
               </div>
 
               {/* Stems Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {stems.map((stem) => (
-                  <div key={stem.id} className="card bg-base-300 p-4">
+                  <div key={stem.id} className="rounded-[24px] border border-white/10 bg-white/[0.04] p-4">
                     <div className="flex justify-between items-center mb-2">
                       <h3 className="font-semibold">Stem {stem.id + 1}</h3>
                       <button
@@ -534,7 +534,7 @@ const BitcoinAudioSampleEngine: React.FC = () => {
                         className="btn btn-xs btn-circle btn-ghost"
                         disabled={stem.isMuted}
                       >
-                        ▶️
+                        Play
                       </button>
                     </div>
 
@@ -550,13 +550,13 @@ const BitcoinAudioSampleEngine: React.FC = () => {
                           onClick={() => toggleMute(stem.id)}
                           className={`btn btn-xs flex-1 ${stem.isMuted ? 'btn-error' : 'btn-ghost'}`}
                         >
-                          {stem.isMuted ? '🔇 Muted' : '🔊 Mute'}
+                          {stem.isMuted ? 'Muted' : 'Mute'}
                         </button>
                         <button
                           onClick={() => toggleSolo(stem.id)}
                           className={`btn btn-xs flex-1 ${stem.isSolo ? 'btn-warning' : 'btn-ghost'}`}
                         >
-                          {stem.isSolo ? '⭐ Solo' : 'Solo'}
+                          {stem.isSolo ? 'Solo On' : 'Solo'}
                         </button>
                       </div>
 
@@ -584,7 +584,7 @@ const BitcoinAudioSampleEngine: React.FC = () => {
         )}
 
         {/* Info Section */}
-        <section className="card bg-base-200 p-6">
+        <section className="inspira-panel rounded-[30px] p-6">
           <h2 className="text-xl font-semibold mb-4">How It Works</h2>
           <div className="space-y-2 text-sm text-base-content/80">
             <p>1. Enter a Bitcoin block height and select a data source (Merkle Root or Block Hash)</p>
@@ -593,7 +593,7 @@ const BitcoinAudioSampleEngine: React.FC = () => {
             <p>4. The data is divided into 8 segments of 8 characters, each generating a unique audio stem</p>
             <p>5. Control individual stems: play, mute, solo, and adjust volume</p>
             <p>6. Play all stems together to create a unique Bitcoin-blockchain-generated composition</p>
-            <p className="text-primary mt-4 font-semibold">💡 Each block creates a completely unique visual and sonic fingerprint</p>
+            <p className="mt-4 font-semibold text-primary">Each block creates a completely unique visual and sonic fingerprint</p>
           </div>
         </section>
       </div>

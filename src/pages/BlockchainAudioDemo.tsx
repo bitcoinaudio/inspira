@@ -12,15 +12,15 @@ import BlockchainAudioEngine from '../components/BlockchainAudioEngine';
  */
 const BlockchainAudioDemo: React.FC = () => {
   return (
-    <div className="min-h-screen bg-base-100 p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="inspira-shell min-h-screen px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl">
         {/* Page Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold text-primary flex items-center justify-center gap-3">
-            <span className="text-5xl"></span>
-            Bitcoin Audio 
+        <div className="mb-8 rounded-[32px] border border-white/10 bg-white/[0.03] p-6 text-center sm:p-8">
+          <span className="inspira-kicker">Blockchain Sonics</span>
+          <h1 className="mt-4 text-4xl font-bold text-primary sm:text-5xl">
+            Bitcoin Audio
           </h1>
-          <p className="text-base-content/70 mt-2 max-w-2xl mx-auto">
+          <p className="mx-auto mt-3 max-w-2xl text-base text-base-content/72 sm:text-lg">
             Transform Bitcoin blockchain data into music and visual art. 
             Each block's hash and merkle root become colors, notes, and rhythms.
           </p>
@@ -28,7 +28,7 @@ const BlockchainAudioDemo: React.FC = () => {
 
         {/* Main Component */}
         <section className="mb-12">
-          <div className="card bg-base-200 p-6 shadow-xl">
+          <div className="inspira-panel rounded-[32px] p-6 shadow-xl">
             <BlockchainAudioEngine
               showNavigator
               showColorPads
@@ -94,7 +94,7 @@ const BlockchainAudioDemo: React.FC = () => {
                 desc: 'Built on Tone.js for professional audio quality' 
               },
             ].map(({ icon, title, desc }) => (
-              <div key={title} className="card bg-base-300 p-4">
+              <div key={title} className="inspira-panel rounded-[24px] p-4">
                 <div className="flex items-start gap-3">
                   <span className="text-2xl">{icon}</span>
                   <div>
@@ -114,7 +114,7 @@ const BlockchainAudioDemo: React.FC = () => {
             How It Works
           </h2>
 
-          <div className="card bg-base-200 p-6">
+          <div className="inspira-panel rounded-[30px] p-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="text-center">
                 <div className="text-4xl mb-3">1️⃣</div>
@@ -142,7 +142,7 @@ const BlockchainAudioDemo: React.FC = () => {
               </div>
             </div>
 
-            <div className="mt-6 p-4 bg-base-300 rounded-lg">
+            <div className="mt-6 rounded-[24px] border border-white/10 bg-black/20 p-4">
               <h4 className="font-medium mb-2">Hex to Note Mapping</h4>
               <div className="grid grid-cols-8 gap-2 text-xs font-mono">
                 {Object.entries({
@@ -151,7 +151,7 @@ const BlockchainAudioDemo: React.FC = () => {
                   '8': 'D3', '9': 'E3', 'a': 'F3', 'b': 'G3',
                   'c': 'A3', 'd': 'B3', 'e': 'C4', 'f': 'D4',
                 }).map(([hex, note]) => (
-                  <div key={hex} className="bg-base-200 p-2 rounded text-center">
+                  <div key={hex} className="rounded-2xl border border-white/10 bg-white/5 p-2 text-center">
                     <div className="text-primary">{hex}</div>
                     <div className="text-base-content/60">{note}</div>
                   </div>
@@ -168,7 +168,7 @@ const BlockchainAudioDemo: React.FC = () => {
             Usage Examples
           </h2>
 
-          <div className="mockup-code bg-base-300">
+          <div className="mockup-code border border-white/10 bg-black/20">
             <pre data-prefix="1"><code>{`// Import the full component`}</code></pre>
             <pre data-prefix="2"><code>{`import BlockchainAudioEngine from './components/BlockchainAudioEngine';`}</code></pre>
             <pre data-prefix="3"><code>{``}</code></pre>
@@ -182,7 +182,7 @@ const BlockchainAudioDemo: React.FC = () => {
             <pre data-prefix="11"><code>{`/>`}</code></pre>
           </div>
 
-          <div className="mt-4 mockup-code bg-base-300">
+          <div className="mt-4 mockup-code border border-white/10 bg-black/20">
             <pre data-prefix="1"><code>{`// Use hooks for custom implementations`}</code></pre>
             <pre data-prefix="2"><code>{`import { useBlockchainData, useBlockchainSynth } from './components/BlockchainAudioEngine';`}</code></pre>
             <pre data-prefix="3"><code>{``}</code></pre>
@@ -219,7 +219,7 @@ const BlockchainAudioDemo: React.FC = () => {
             ].map(({ height, name, desc }) => (
               <div 
                 key={height} 
-                className="card bg-base-300 p-4 hover:bg-primary/10 cursor-pointer transition-colors"
+                className="inspira-panel cursor-pointer rounded-[24px] p-4 transition-colors hover:border-primary/35 hover:bg-primary/10"
                 onClick={() => {
                   console.log('Navigate to block:', height);
                 }}
@@ -233,7 +233,7 @@ const BlockchainAudioDemo: React.FC = () => {
         </section>
 
         {/* Footer */}
-        <footer className="text-center text-sm text-base-content/50 py-8 border-t border-base-300">
+        <footer className="border-t border-white/10 py-8 text-center text-sm text-base-content/50">
           <p>
             Based on the original Bitcoin Audio Engine
           </p>

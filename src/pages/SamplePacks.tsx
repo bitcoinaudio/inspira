@@ -22,26 +22,12 @@ interface SamplePack {
     stems_count: number;
   };
   created_at: string;
-  format_version: string;
   audio: AudioFile[];
   audio_urls: AudioFile[];
-  cover: {
-    filename: string;
-    path: string;
-    size: number;
-  } | null;
   cover_url: string | null;
-  stats: {
-    total_files: number;
-    total_duration_estimate: number;
-  };
   models?: {
     audio?: string;
     checkpoint?: string;
-    lora?: {
-      name: string;
-      strength: number;
-    };
   };
 }
 
@@ -53,11 +39,7 @@ const SamplePacks: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [playingAudio, setPlayingAudio] = useState<{ [key: string]: string | null }>({});
   const [audioElements, setAudioElements] = useState<{ [key: string]: HTMLAudioElement }>({});
-  const [publishModal, setPublishModal] = useState<{ isOpen: boolean; packId: string; packTitle: string }>({
-    isOpen: false,
-    packId: '',
-    packTitle: ''
-  });
+  const [publishModal, setPublishModal] = useState({ isOpen: false, packId: '', packTitle: '' });
 
   useEffect(() => {
     fetchPacks();
@@ -75,28 +57,18 @@ const SamplePacks: React.FC = () => {
   const fetchPacks = async () => {
     try {
       setIsLoading(true);
-      console.log('[SamplePacks] Fetching packs from', `${apiBase}/packs`);
       const response = await fetch(`${apiBase}/packs`);
 
       if (!response.ok) {
-        const errorText = await response.text().catch(() => 'Unknown error');
-        console.error('[SamplePacks] HTTP Error:', response.status, errorText);
         throw new Error(`Failed to fetch sample packs: HTTP ${response.status}`);
       }
 
       const data = await response.json();
-      console.log('[SamplePacks] API Response:', data);
-
-      // Handle different response formats
       const packsList = Array.isArray(data) ? data : (data.packs || data.results || []);
-      console.log('[SamplePacks] Parsed packs:', packsList.length, 'items');
-
       setPacks(packsList);
       setError(null);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
-      console.error('[SamplePacks] Fetch error:', errorMessage, err);
-      setError(errorMessage);
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setIsLoading(false);
     }
@@ -104,9 +76,8 @@ const SamplePacks: React.FC = () => {
 
   const togglePlay = (packId: string, audioPath: string) => {
     const key = `${packId}-${audioPath}`;
-    
-    // Stop any currently playing audio for this pack
-    Object.keys(audioElements).forEach(k => {
+
+    Object.keys(audioElements).forEach((k) => {
       if (k.startsWith(packId) && audioElements[k]) {
         audioElements[k].pause();
         audioElements[k].currentTime = 0;
@@ -114,34 +85,28 @@ const SamplePacks: React.FC = () => {
     });
 
     if (playingAudio[packId] === audioPath) {
-      // Stop playing
-      setPlayingAudio(prev => ({ ...prev, [packId]: null }));
+      setPlayingAudio((prev) => ({ ...prev, [packId]: null }));
     } else {
-      // Start playing
       if (!audioElements[key]) {
-        // Construct full URL with /api prefix
         const fullUrl = buildFileUrl(audioPath) || audioPath;
         const audio = new Audio(fullUrl);
         audio.crossOrigin = 'anonymous';
         audio.addEventListener('ended', () => {
-          setPlayingAudio(prev => ({ ...prev, [packId]: null }));
+          setPlayingAudio((prev) => ({ ...prev, [packId]: null }));
         });
-        audio.addEventListener('error', (e) => {
-          console.error('Audio playback error:', e);
-          setPlayingAudio(prev => ({ ...prev, [packId]: null }));
+        audio.addEventListener('error', () => {
+          setPlayingAudio((prev) => ({ ...prev, [packId]: null }));
         });
-        setAudioElements(prev => ({ ...prev, [key]: audio }));
-        audio.play().catch(err => {
-          console.error('Failed to play audio:', err);
-          setPlayingAudio(prev => ({ ...prev, [packId]: null }));
+        setAudioElements((prev) => ({ ...prev, [key]: audio }));
+        audio.play().catch(() => {
+          setPlayingAudio((prev) => ({ ...prev, [packId]: null }));
         });
       } else {
-        audioElements[key].play().catch(err => {
-          console.error('Failed to play audio:', err);
-          setPlayingAudio(prev => ({ ...prev, [packId]: null }));
+        audioElements[key].play().catch(() => {
+          setPlayingAudio((prev) => ({ ...prev, [packId]: null }));
         });
       }
-      setPlayingAudio(prev => ({ ...prev, [packId]: audioPath }));
+      setPlayingAudio((prev) => ({ ...prev, [packId]: audioPath }));
     }
   };
 
@@ -151,191 +116,137 @@ const SamplePacks: React.FC = () => {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric', 
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
       year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
     });
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-base-100 p-8">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl font-bold text-primary mb-8">Sample Packs</h1>
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-base-content"></div>
-          </div>
-        </div>
-      </div>
-    );
+    return <div className="inspira-panel rounded-[34px] px-6 py-12 text-center text-base-content/60">Loading packs...</div>;
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-base-100 p-8">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl font-bold text-primary mb-8">Sample Packs</h1>
-          <div className="alert alert-error flex flex-col items-center gap-3">
-            <span>{error}</span>
-            <button 
-              onClick={fetchPacks}
-              className="btn btn-sm btn-outline"
-            >
-              Retry
-            </button>
-          </div>
-        </div>
+      <div className="inspira-panel rounded-[34px] px-6 py-12 text-center">
+        <p className="text-error">{error}</p>
+        <button onClick={fetchPacks} className="mt-4 inline-flex rounded-full bg-primary px-5 py-3 font-semibold text-primary-content">
+          Retry
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-base-100 p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-4xl font-bold text-primary">Sample Packs</h1>
-          <button 
-            onClick={fetchPacks}
-            className="btn btn-ghost"
-          >
+    <div className="space-y-8 pb-6">
+      <section className="inspira-panel rounded-[34px] px-6 py-8 md:px-8 md:py-10">
+        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+          <div>
+            <div className="inspira-kicker">Sample packs</div>
+            <h1 className="mt-5 text-4xl text-base-content md:text-5xl">Browse generated packs and launch into Studio.</h1>
+            <p className="mt-4 max-w-3xl text-lg leading-8 text-base-content/72">
+              Explore generated sample packs, preview individual stems, download complete bundles, and publish selected packs into Beatfeed when your wallet is connected.
+            </p>
+          </div>
+          <button onClick={fetchPacks} className="inline-flex rounded-full border border-base-300 px-5 py-3 font-semibold text-base-content hover:border-primary hover:text-primary">
             Refresh
           </button>
         </div>
+      </section>
 
-        {packs.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-base-content/60 text-lg">No sample packs yet. Generate your first pack!</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {packs.map((pack) => (
-              <div 
-                key={pack.job_id} 
-                className="card bg-base-200 shadow-xl border border-base-300 hover:shadow-2xl transition"
-              >
-                {/* Cover Image */}
-                <div className="relative aspect-square bg-base-300">
-                  {buildFileUrl(pack.cover_url) ? (
-                    <img 
-                      src={buildFileUrl(pack.cover_url) as string}
-                      alt={pack.prompt}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center h-full">
-                      <svg className="w-16 h-16 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-                      </svg>
-                    </div>
-                  )}
-                  {/* BPM & Key Badge */}
-                  <div className="absolute top-2 right-2 badge badge-neutral">
-                    {pack.parameters.bpm} BPM • {pack.parameters.key}
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="card-body p-4">
-                  {/* Title */}
-                  <h3 className="text-base-content font-semibold mb-2 line-clamp-2 min-h-[3rem]">
-                    {pack.prompt}
-                  </h3>
-
-                  {/* Metadata */}
-                  <div className="flex items-center gap-2 text-xs text-base-content/60 mb-3">
-                    <span>{pack.audio?.length || 0} stems</span>
-                    <span>•</span>
-                    <span>{formatDate(pack.created_at)}</span>
-                  </div>
-
-                  {/* Model Info */}
-                  {pack.models && (
-                    <div className="mb-3 text-xs text-base-content/60">
-                      {pack.models.checkpoint && (
-                        <div className="truncate">🎨 {pack.models.checkpoint.replace('.safetensors', '')}</div>
-                      )}
-                      {pack.models.audio && (
-                        <div className="truncate">🎵 {pack.models.audio}</div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Audio Stems */}
-                  {pack.audio && pack.audio.length > 0 && (
-                    <div className="mb-3 flex flex-wrap gap-1">
-                      {pack.audio.map((audio, idx) => {
-                        const audioPath =
-                          buildFileUrl(audio.url) ||
-                          buildFileUrl(audio.path ? `/files/${audio.path}` : null) ||
-                          '';
-                        if (!audioPath) return null;
-                        return (
-                          <button
-                            key={idx}
-                            onClick={() => togglePlay(pack.job_id, audioPath)}
-                            className={`badge badge-lg gap-2 cursor-pointer transition ${
-                              playingAudio[pack.job_id] === audioPath
-                                ? 'badge-success'
-                                : 'badge-ghost'
-                            }`}
-                          >
-                            {playingAudio[pack.job_id] === audioPath ? '⏸' : '▶'} {audio.stem}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  {/* Action Buttons */}
-                  <div className="flex-col gap-2">
-                    <div className="flex gap-2">
-                      <Link
-                        to={`../studio/${pack.job_id}`}
-                        className="btn btn-secondary flex-1"
-                      >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                        Studio
-                      </Link>
-                      <button
-                        onClick={() => downloadPack(pack.job_id)}
-                        className="btn btn-primary flex-1"
-                      >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                        </svg>
-                        Download
-                      </button>
-                    </div>
-                    <button
-                      onClick={() => {
-                        if (!isWalletConnected) return;
-                        setPublishModal({ isOpen: true, packId: pack.job_id, packTitle: pack.prompt });
-                      }}
-                      className="btn btn-warning w-full"
-                      disabled={!isWalletConnected}
-                    >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      Publish to Beatfeed
-                    </button>
-                    {!isWalletConnected && (
-                      <WalletRequiredNotice action="Generate/Publish" className="mt-1 text-xs" />
-                    )}
-                  </div>
+      {packs.length === 0 ? (
+        <div className="inspira-panel rounded-[34px] p-16 text-center">
+          <p className="text-lg text-base-content/60">No sample packs yet. Generate your first pack.</p>
+        </div>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          {packs.map((pack) => (
+            <article key={pack.job_id} className="inspira-panel overflow-hidden rounded-[30px]">
+              <div className="relative aspect-square bg-base-300">
+                {buildFileUrl(pack.cover_url) ? (
+                  <img
+                    src={buildFileUrl(pack.cover_url) as string}
+                    alt={pack.prompt}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center text-base-content/40">No cover</div>
+                )}
+                <div className="absolute right-3 top-3 rounded-full bg-base-100/85 px-3 py-1 text-xs font-semibold text-base-content">
+                  {pack.parameters.bpm} BPM • {pack.parameters.key}
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
 
-      {/* Publish to Beatfeed Modal */}
+              <div className="space-y-4 p-5">
+                <div>
+                  <h2 className="line-clamp-2 text-xl text-base-content">{pack.prompt}</h2>
+                  <p className="mt-2 text-sm text-base-content/60">
+                    {(pack.audio?.length || 0)} stems • {formatDate(pack.created_at)}
+                  </p>
+                </div>
+
+                {pack.models && (
+                  <div className="space-y-1 text-xs text-base-content/60">
+                    {pack.models.checkpoint ? <div>{pack.models.checkpoint.replace('.safetensors', '')}</div> : null}
+                    {pack.models.audio ? <div>{pack.models.audio}</div> : null}
+                  </div>
+                )}
+
+                {pack.audio && pack.audio.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {pack.audio.slice(0, 4).map((audio, idx) => {
+                      const audioPath =
+                        buildFileUrl(audio.url) ||
+                        buildFileUrl(audio.path ? `/files/${audio.path}` : null) ||
+                        '';
+                      if (!audioPath) return null;
+                      return (
+                        <button
+                          key={idx}
+                          onClick={() => togglePlay(pack.job_id, audioPath)}
+                          className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
+                            playingAudio[pack.job_id] === audioPath
+                              ? 'bg-success text-success-content'
+                              : 'border border-base-300 bg-base-100/60 text-base-content/75'
+                          }`}
+                        >
+                          {playingAudio[pack.job_id] === audioPath ? 'Pause' : 'Play'} {audio.stem}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : null}
+
+                <div className="grid gap-2">
+                  <div className="grid grid-cols-2 gap-2">
+                    <Link to={`../studio/${pack.job_id}`} className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-3 text-sm font-semibold text-primary-content">
+                      Studio
+                    </Link>
+                    <button onClick={() => downloadPack(pack.job_id)} className="rounded-full border border-base-300 px-4 py-3 text-sm font-semibold text-base-content hover:border-primary hover:text-primary">
+                      Download
+                    </button>
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (!isWalletConnected) return;
+                      setPublishModal({ isOpen: true, packId: pack.job_id, packTitle: pack.prompt });
+                    }}
+                    className="rounded-full bg-warning px-4 py-3 text-sm font-semibold text-warning-content disabled:opacity-60"
+                    disabled={!isWalletConnected}
+                  >
+                    Publish to Beatfeed
+                  </button>
+                  {!isWalletConnected ? (
+                    <WalletRequiredNotice action="publish to Beatfeed" className="text-xs" />
+                  ) : null}
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+
       <PublishToBeatfeedModal
         packId={publishModal.packId}
         packTitle={publishModal.packTitle}
@@ -343,7 +254,6 @@ const SamplePacks: React.FC = () => {
         walletConnected={isWalletConnected}
         onClose={() => setPublishModal({ ...publishModal, isOpen: false })}
         onSuccess={() => {
-          // Optionally refresh packs list
           fetchPacks();
         }}
       />

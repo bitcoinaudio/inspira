@@ -5,7 +5,7 @@ type Props = {
 
 const WalletRequiredNotice: React.FC<Props> = ({ action, className = "" }) => {
   return (
-    <div className={`alert alert-warning ${className}`.trim()}>
+    <div className={`rounded-[18px] border border-warning/30 bg-warning/10 px-4 py-3 text-warning ${className}`.trim()}>
       <span>Connect your wallet to {action}.</span>
     </div>
   );

@@ -700,11 +700,14 @@ const InspiraStudio: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-base-100 p-8">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl font-bold text-primary mb-8">Inspira Studio</h1>
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-base-content"></div>
+      <div className="inspira-shell min-h-screen px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="inspira-panel rounded-[32px] p-8 sm:p-10">
+            <span className="inspira-kicker mb-6">Create and Mix</span>
+            <h1 className="text-4xl font-bold text-primary sm:text-5xl">Inspira Studio</h1>
+            <div className="flex h-64 items-center justify-center">
+              <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-t-2 border-base-content"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -713,14 +716,17 @@ const InspiraStudio: React.FC = () => {
 
   if (error || !pack) {
     return (
-      <div className="min-h-screen bg-base-100 p-8">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl font-bold text-primary mb-8">Inspira Studio</h1>
-          <div className="alert alert-error">
-            <span>{error || 'Failed to load pack'}</span>
-            <button onClick={() => navigate(-1)} className="btn btn-sm">
-              Go Back
-            </button>
+      <div className="inspira-shell min-h-screen px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="inspira-panel rounded-[32px] p-8 sm:p-10">
+            <span className="inspira-kicker mb-6">Create and Mix</span>
+            <h1 className="text-4xl font-bold text-primary sm:text-5xl">Inspira Studio</h1>
+            <div className="mt-8 flex flex-col gap-4 rounded-[24px] border border-error/30 bg-error/10 p-5 text-error-content sm:flex-row sm:items-center sm:justify-between">
+              <span>{error || 'Failed to load pack'}</span>
+              <button onClick={() => navigate(-1)} className="btn btn-sm rounded-full border-none bg-primary text-primary-content shadow-[0_12px_30px_rgba(247,147,26,0.24)] hover:-translate-y-0.5 hover:bg-primary">
+                Go Back
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -728,30 +734,33 @@ const InspiraStudio: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-base-100 p-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="inspira-shell min-h-screen px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-4xl font-bold text-primary flex items-center gap-3">
-              🎛️ Inspira Studio
-            </h1>
-            <p className="text-base-content/70 mt-2">Mix, edit, and record your audio</p>
+        <div className="mb-8 flex flex-col gap-5 rounded-[32px] border border-white/10 bg-white/[0.03] p-6 sm:p-8 lg:flex-row lg:items-end lg:justify-between">
+          <div className="space-y-4">
+            <span className="inspira-kicker">Studio Session</span>
+            <div>
+              <h1 className="text-4xl font-bold text-primary sm:text-5xl">
+                Inspira Studio
+              </h1>
+              <p className="mt-3 max-w-2xl text-base text-base-content/72 sm:text-lg">Mix, shape, and record every generated layer from a single focused workspace.</p>
+            </div>
           </div>
-          <button onClick={() => navigate(-1)} className="btn btn-ghost">
-            ← Back
+          <button onClick={() => navigate(-1)} className="btn rounded-full border border-white/10 bg-white/5 px-5 text-base-content hover:-translate-y-0.5 hover:border-primary/40 hover:bg-primary/10">
+            Back
           </button>
         </div>
 
         {isBasePack && (
-          <div className="alert alert-info mb-6">
+          <div className="mb-6 flex flex-col gap-4 rounded-[28px] border border-primary/20 bg-primary/10 p-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <div className="font-semibold">B.A.S.E pack detected</div>
-              <div className="text-sm">
+              <div className="font-semibold text-primary">B.A.S.E pack detected</div>
+              <div className="text-sm text-base-content/70">
                 These packs include cover art and stem note data. Studio mixing is available for audio packs.
               </div>
             </div>
-            <Link to="../base-packs" className="btn btn-sm btn-outline">
+            <Link to="../base-packs" className="btn btn-sm rounded-full border border-primary/30 bg-transparent text-primary hover:-translate-y-0.5 hover:border-primary hover:bg-primary hover:text-primary-content">
               Back to B.A.S.E Packs
             </Link>
           </div>
@@ -761,7 +770,7 @@ const InspiraStudio: React.FC = () => {
           {/* Left Column - Cover & Info */}
           <div className="lg:col-span-1 space-y-6">
             {/* Cover Image */}
-            <div className="card bg-base-200 overflow-hidden shadow-lg">
+            <div className="inspira-panel overflow-hidden rounded-[30px]">
               <figure className="aspect-square bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
                 {getCoverImage() ? (
                   <img
@@ -784,8 +793,8 @@ const InspiraStudio: React.FC = () => {
             </div>
 
             {/* Pack Info */}
-            <div className="card bg-base-200 p-6">
-              <h2 className="text-xl font-bold mb-4">📦 Pack Info</h2>
+            <div className="inspira-panel rounded-[30px] p-6">
+              <h2 className="mb-4 text-xl font-bold">Pack Info</h2>
               <div className="space-y-4 text-sm">
                 <div>
                   <span className="opacity-70 text-xs uppercase tracking-wide">Prompt/Title</span>
@@ -796,13 +805,13 @@ const InspiraStudio: React.FC = () => {
                 
                 <div className="grid grid-cols-2 gap-3">
                   {pack.parameters?.bpm && (
-                    <div className="bg-base-300 rounded p-2">
+                    <div className="rounded-2xl border border-white/8 bg-white/5 p-3">
                       <span className="opacity-70 text-xs">BPM</span>
                       <div className="font-bold text-lg">{pack.parameters.bpm}</div>
                     </div>
                   )}
                   {pack.parameters?.key && (
-                    <div className="bg-base-300 rounded p-2">
+                    <div className="rounded-2xl border border-white/8 bg-white/5 p-3">
                       <span className="opacity-70 text-xs">KEY</span>
                       <div className="font-bold text-lg">{pack.parameters.key}</div>
                     </div>
@@ -811,7 +820,7 @@ const InspiraStudio: React.FC = () => {
 
                 <div className="divider my-2"></div>
 
-                <div className="bg-base-300 rounded p-3">
+                <div className="rounded-[22px] border border-primary/18 bg-primary/10 p-3">
                   <div className="flex items-center justify-between">
                     <span className="opacity-70">Audio Stems Loaded</span>
                     <span className="badge badge-primary badge-lg">{stems.length}</span>
@@ -820,7 +829,7 @@ const InspiraStudio: React.FC = () => {
 
                 {pack.outputs?.image_url && (
                   <div className="text-xs opacity-60 pt-2">
-                    ✓ Cover art generated
+                    Cover art generated
                   </div>
                 )}
               </div>
@@ -830,7 +839,7 @@ const InspiraStudio: React.FC = () => {
           {/* Middle & Right Column - Mixer */}
           <div className="lg:col-span-2 space-y-6">
             {/* Transport Controls */}
-            <div className="card bg-base-200 p-6">
+            <div className="inspira-panel rounded-[30px] p-6">
               <div className="flex flex-col gap-4">
                 {/* Play/Stop Controls */}
                 <div className="flex gap-3 items-center">
@@ -888,7 +897,7 @@ const InspiraStudio: React.FC = () => {
 
                   {isRecording && (
                     <div className="badge badge-error badge-lg gap-2">
-                      ⏱️ {formatTime(recordingTime)}
+                      REC {formatTime(recordingTime)}
                     </div>
                   )}
                 </div>
@@ -949,7 +958,7 @@ const InspiraStudio: React.FC = () => {
                       className="btn btn-xs btn-ghost"
                       title="Toggle spectrum view"
                     >
-                      {showSpectrum ? '📊' : '📉'}
+                      {showSpectrum ? 'Hide' : 'Show'}
                     </button>
                   </div>
                   {showSpectrum && masterSpectrum.length > 0 && (
@@ -1016,7 +1025,7 @@ const InspiraStudio: React.FC = () => {
                         className="range range-xs"
                       />
                       <div className="text-xs opacity-60 pl-1">
-                        🛡️ Hard limiting at {limiterThreshold.toFixed(1)}dB
+                        Hard limiting at {limiterThreshold.toFixed(1)}dB
                       </div>
                     </div>
                   )}
@@ -1025,8 +1034,8 @@ const InspiraStudio: React.FC = () => {
             </div>
 
             {/* Stems List */}
-            <div className="card bg-base-200 p-6">
-              <h2 className="text-xl font-bold mb-4">🎵 Audio Stems ({stems.length})</h2>
+            <div className="inspira-panel rounded-[30px] p-6">
+              <h2 className="mb-4 text-xl font-bold">Audio Stems ({stems.length})</h2>
               <div className="space-y-3 max-h-96 overflow-y-auto">
                 {stems.length === 0 ? (
                   <div className="text-center py-8 opacity-50">
@@ -1034,7 +1043,7 @@ const InspiraStudio: React.FC = () => {
                   </div>
                 ) : (
                   stems.map((stem, index) => (
-                    <div key={stem.id} className="border border-base-300 rounded-lg p-4 hover:border-base-content/30 transition-colors">
+                    <div key={stem.id} className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4 transition-colors hover:border-primary/35">
                       {/* Stem Header */}
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-3">
@@ -1049,7 +1058,7 @@ const InspiraStudio: React.FC = () => {
                             }`}
                             title="Mute"
                           >
-                            {stem.isMuted ? '🔇' : '🔊'}
+                            {stem.isMuted ? 'Muted' : 'Mute'}
                           </button>
                           <button
                             onClick={() => toggleSolo(stem.id)}
@@ -1142,7 +1151,7 @@ const InspiraStudio: React.FC = () => {
                     {/* Effects & ADSR Controls */}
                     <details className="collapse border border-base-300">
                       <summary className="collapse-title p-2 text-sm font-semibold cursor-pointer hover:bg-base-300">
-                        ⚙️ Effects & ADSR
+                        Effects and ADSR
                       </summary>
                       <div className="collapse-content p-3 text-xs space-y-4">
                         {/* ADSR Section */}

@@ -127,14 +127,15 @@ const BitcoinAudioDemo: React.FC = () => {
     };
   }, []);
   return (
-    <div className="min-h-screen bg-base-100 p-8">
-      <div className="max-w-6xl mx-auto">
+    <div className="inspira-shell min-h-screen px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl">
         {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-primary flex items-center gap-3">
-          Bitcoin Audio Sample Engine Demo
+        <div className="mb-8 rounded-[32px] border border-white/10 bg-white/[0.03] p-6 sm:p-8">
+          <span className="inspira-kicker">Engine Components</span>
+          <h1 className="mt-4 text-4xl font-bold text-primary sm:text-5xl">
+            Bitcoin Audio Sample Engine Demo
           </h1>
-          <p className="text-base-content/70 mt-2">
+          <p className="mt-3 text-base text-base-content/72 sm:text-lg">
             Web-based audio synthesis and visualization components built with React and Tone.js
           </p>
         </div>
@@ -145,7 +146,7 @@ const BitcoinAudioDemo: React.FC = () => {
             <span>⛓️</span>
             Blockchain Audio Data
           </h2>
-          <div className="card bg-base-200 p-6">
+          <div className="inspira-panel rounded-[30px] p-6">
             {/* Block Selector */}
             <div className="flex gap-2 mb-4">
               <input
@@ -159,7 +160,7 @@ const BitcoinAudioDemo: React.FC = () => {
               <button
                 onClick={handleFetchBlock}
                 disabled={isLoading}
-                className="btn btn-primary"
+                className="btn rounded-full border-none bg-primary text-primary-content shadow-[0_12px_30px_rgba(247,147,26,0.24)] hover:-translate-y-0.5 hover:bg-primary"
               >
                 {isLoading ? (
                   <span className="loading loading-spinner loading-sm"></span>
@@ -267,7 +268,7 @@ const BitcoinAudioDemo: React.FC = () => {
                 </div>
 
                 {/* Note mapping legend */}
-                <div className="text-xs opacity-70 bg-base-300 p-3 rounded-lg">
+                <div className="rounded-[22px] border border-white/10 bg-black/20 p-3 text-xs opacity-70">
                   <div className="font-medium mb-1">Hex to Note Mapping:</div>
                   <div className="grid grid-cols-8 gap-1 font-mono">
                     {Object.entries(hexToNote).map(([hex, note]) => (
@@ -289,7 +290,7 @@ const BitcoinAudioDemo: React.FC = () => {
           <p className="text-sm text-base-content/60 mb-4">
             Complete audio workstation with oscilloscope, FFT spectrum analyzer, and synthesizer controls.
           </p>
-          <div className="card bg-base-200 p-6">
+          <div className="inspira-panel rounded-[30px] p-6">
             <BitcoinAudioEngine
               showOscilloscope
               showFFT
@@ -313,7 +314,7 @@ const BitcoinAudioDemo: React.FC = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Oscilloscope Only */}
-            <div className="card bg-base-200 p-6">
+            <div className="inspira-panel rounded-[30px] p-6">
               <h3 className="text-lg font-medium mb-4">Oscilloscope</h3>
               <p className="text-sm text-base-content/60 mb-4">
                 Real-time waveform visualization. Displays the audio signal in time domain.
@@ -328,7 +329,7 @@ const BitcoinAudioDemo: React.FC = () => {
             </div>
 
             {/* FFT Only */}
-            <div className="card bg-base-200 p-6">
+            <div className="inspira-panel rounded-[30px] p-6">
               <h3 className="text-lg font-medium mb-4">FFT Spectrum</h3>
               <p className="text-sm text-base-content/60 mb-4">
                 Frequency spectrum analyzer. Shows audio frequencies from low to high.
@@ -369,7 +370,7 @@ const BitcoinAudioDemo: React.FC = () => {
             Usage Examples
           </h2>
 
-          <div className="mockup-code bg-base-300">
+          <div className="mockup-code border border-white/10 bg-black/20">
             <pre data-prefix="1"><code>{`// Import the full component`}</code></pre>
             <pre data-prefix="2"><code>{`import BitcoinAudioEngine from './components/BitcoinAudioEngine';`}</code></pre>
             <pre data-prefix="3"><code>{``}</code></pre>
@@ -382,7 +383,7 @@ const BitcoinAudioDemo: React.FC = () => {
             <pre data-prefix="10"><code>{`/>`}</code></pre>
           </div>
 
-          <div className="mt-4 mockup-code bg-base-300">
+          <div className="mt-4 mockup-code border border-white/10 bg-black/20">
             <pre data-prefix="1"><code>{`// Import individual components`}</code></pre>
             <pre data-prefix="2"><code>{`import { Oscilloscope, FFTVisualizer, SynthControls } from './components/BitcoinAudioEngine';`}</code></pre>
             <pre data-prefix="3"><code>{``}</code></pre>
@@ -410,7 +411,7 @@ const BitcoinAudioDemo: React.FC = () => {
               { icon: '🎨', title: 'Theming', desc: 'Bitcoin, Dark, and Light themes' },
               { icon: '⚡', title: 'Web Audio API', desc: 'Built on Tone.js for performance' },
             ].map(({ icon, title, desc }) => (
-              <div key={title} className="card bg-base-200 p-4">
+              <div key={title} className="inspira-panel rounded-[24px] p-4">
                 <div className="flex items-start gap-3">
                   <span className="text-2xl">{icon}</span>
                   <div>

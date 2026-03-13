@@ -119,13 +119,14 @@ export default function SuperPackGallery() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-base-100 p-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <h1 className="text-4xl font-bold">SuperPack Gallery</h1>
-          </div>
-          <div className="flex items-center justify-center h-48">
-            <span className="loading loading-spinner loading-lg" />
+      <div className="inspira-shell min-h-screen px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="inspira-panel rounded-[32px] p-8 sm:p-10">
+            <span className="inspira-kicker mb-6">SuperPack Archive</span>
+            <h1 className="text-4xl font-bold text-primary sm:text-5xl">SuperPack Gallery</h1>
+            <div className="flex h-48 items-center justify-center">
+              <span className="loading loading-spinner loading-lg" />
+            </div>
           </div>
         </div>
       </div>
@@ -133,32 +134,35 @@ export default function SuperPackGallery() {
   }
 
   return (
-    <div className="min-h-screen bg-base-100 p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-8">
-          <div>
-            <h1 className="text-4xl font-bold">SuperPack Gallery</h1>
-            <p className="text-base-content/70 mt-2">Browse completed SuperPacks and download visuals, video, and stems.</p>
+    <div className="inspira-shell min-h-screen px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-3 rounded-[32px] border border-white/10 bg-white/[0.03] p-6 sm:p-8">
+          <div className="space-y-4">
+            <span className="inspira-kicker">SuperPack Archive</span>
+            <div>
+              <h1 className="text-4xl font-bold text-primary sm:text-5xl">SuperPack Gallery</h1>
+              <p className="mt-3 text-base text-base-content/72 sm:text-lg">Browse completed SuperPacks and download visuals, video, and stems.</p>
+            </div>
           </div>
           <div className="flex items-center gap-2">
-            <Link to="/superpack" className="btn btn-outline btn-sm">
+            <Link to="/superpack" className="btn btn-sm rounded-full border border-primary/30 bg-transparent text-primary hover:-translate-y-0.5 hover:border-primary hover:bg-primary hover:text-primary-content">
               Create SuperPack
             </Link>
-            <button onClick={fetchJobs} className="btn btn-ghost btn-sm">
+            <button onClick={fetchJobs} className="btn btn-sm rounded-full border border-white/10 bg-white/5 hover:-translate-y-0.5 hover:border-primary/40 hover:bg-primary/10">
               Refresh
             </button>
           </div>
         </div>
 
         {error && (
-          <div className="alert alert-error mb-6">
+          <div className="mb-6 rounded-[24px] border border-error/30 bg-error/10 p-4">
             <span>{error}</span>
           </div>
         )}
 
         {jobs.length === 0 ? (
-          <div className="card bg-base-200 border border-base-300">
-            <div className="card-body">
+          <div className="inspira-panel rounded-[30px] border border-white/10">
+            <div className="p-6">
               <p className="text-base-content/70">No completed SuperPacks found yet.</p>
             </div>
           </div>
@@ -168,7 +172,7 @@ export default function SuperPackGallery() {
               const stems = sortedStems(job.outputs?.audio_stems);
               const blockHeight = job.parameters?.blockHeight ?? 'Unknown';
               return (
-                <div key={job.job_id} className="card bg-base-200 shadow-xl border border-base-300 hover:shadow-2xl transition">
+                <div key={job.job_id} className="inspira-panel rounded-[30px] border border-white/10 shadow-xl transition hover:-translate-y-1">
                   <figure className="relative aspect-video bg-base-300 overflow-hidden">
                     {job.outputs?.video_url ? (
                       <video src={job.outputs.video_url} className="w-full h-full object-cover" muted loop playsInline preload="metadata" />
@@ -181,7 +185,7 @@ export default function SuperPackGallery() {
                     </div>
                   </figure>
 
-                  <div className="card-body p-4">
+                  <div className="p-4">
                     <div className="text-sm font-semibold">Block {blockHeight}</div>
                     <div className="text-xs text-base-content/60">{formatDate(job.updated_at || job.created_at)}</div>
 
