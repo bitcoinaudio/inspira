@@ -26,6 +26,7 @@ const AIGenerator: React.FC = () => {
   const [stems, setStems] = useState(2);
   const [modelSize, setModelSize] = useState<'small' | 'medium'>('small');
   const [guidance, setGuidance] = useState(3.0);
+  
   const [workflow, setWorkflow] = useState('inspira-packs/rad-graff-v1');
   const [availableWorkflows, setAvailableWorkflows] = useState<Array<{
     value: string;
@@ -345,7 +346,7 @@ const AIGenerator: React.FC = () => {
                   <select
                     value={workflow}
                     onChange={(e) => setWorkflow(e.target.value)}
-                    className="select select-bordered w-full bg-base-300"
+                    className="select select-bordered w-full border-white/10 bg-black/50"
                     disabled={isGenerating || isLoadingWorkflows}
                   >
                     {isLoadingWorkflows ? (
