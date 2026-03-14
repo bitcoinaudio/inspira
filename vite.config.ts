@@ -18,6 +18,7 @@ export default defineConfig(({ mode }) => {
     host: '0.0.0.0',
     port: 5176,
     strictPort: true,
+    allowedHosts: ['inspira.local', 'inspira.bitcoinaudio.local', 'localhost', '127.0.0.1'],
     // Note: COOP/COEP headers disabled for development compatibility
     // Enable these in production if SharedArrayBuffer is needed for Tone.js AudioWorklet
     // headers: {
