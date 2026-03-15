@@ -81,9 +81,10 @@ function App() {
             <div className="mx-auto flex max-w-7xl flex-col gap-3">
               <div className="inspira-panel flex w-full flex-wrap items-center justify-between gap-4 rounded-[28px] px-5 py-4 backdrop-blur md:px-6">
                 <div className="flex items-center gap-3">
-                  <img src="/inspira-logo.png" alt="Inspira Logo" className="h-12 w-12 rounded-2xl object-cover" />
+                  <img src="/inspira-logo.png" alt="Inspira Logo" className="h-12 w-12 rounded-xl object-cover" />
                   <div className="leading-tight">
                     <div className="font-orbitron text-base font-bold tracking-[0.08em] text-base-content">Inspira</div>
+                    <a href="https://bitcoinaudio.ai" className="font-mono text-[10px] uppercase tracking-[0.15em] text-base-content/50 hover:text-primary transition-colors">← bitcoinaudio.ai</a>
                   </div>
                 </div>
 
@@ -139,6 +140,9 @@ function App() {
                         {item.label}
                       </NavLink>
                     ))}
+                    <a href="https://bitcoinaudio.ai" className="rounded-[18px] px-4 py-3 text-sm font-semibold bg-base-100/65 text-base-content/60 hover:bg-base-100 hover:text-base-content transition">
+                      ← bitcoinaudio.ai
+                    </a>
                   </div>
 
                   <div className="mt-4 grid gap-3 rounded-[22px] border border-base-300 bg-base-100/55 p-4">
