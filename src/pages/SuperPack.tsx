@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { normalizeApiUrl } from '../utils/samplePackerAPI';
 
-type JobStatus = 'processing' | 'completed' | 'failed';
+type JobStatus = 'processing' | 'completed' | 'failed' | 'timeout';
 
 interface SuperPackJob {
   job_id: string;
@@ -138,12 +138,12 @@ export default function SuperPack() {
           return;
         }
 
-        if (payload.status === 'failed') {
+        if (payload.status === 'failed' || payload.status === 'timeout') {
           setProcessingJob(null);
           setCompletedJob({
             ...processingJob,
             status: 'failed',
-            error: payload.error?.message || payload.error || 'Render failed',
+            error: payload.error?.message || payload.error || (payload.status === 'timeout' ? 'Render timed out' : 'Render failed'),
           });
           fetchRecent();
         }
