@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { normalizeApiUrl } from '../utils/samplePackerAPI';
 
-type JobStatus = 'processing' | 'completed' | 'failed';
+type JobStatus = 'processing' | 'completed' | 'failed' | 'timeout';
 
 interface SuperPackJob {
   job_id: string;
@@ -12,6 +12,7 @@ interface SuperPackJob {
   includeAudio?: boolean;
   created_at?: string;
   updated_at?: string;
+  progress?: number;
   outputs?: {
     image_url?: string;
     video_url?: string;
@@ -138,15 +139,22 @@ export default function SuperPack() {
           return;
         }
 
-        if (payload.status === 'failed') {
+        if (payload.status === 'failed' || payload.status === 'timeout') {
           setProcessingJob(null);
           setCompletedJob({
             ...processingJob,
-            status: 'failed',
-            error: payload.error?.message || payload.error || 'Render failed',
+            status: payload.status,
+            error: payload.error_message || payload.error?.message || payload.error || (payload.status === 'timeout' ? 'Render timed out' : 'Render failed'),
           });
           fetchRecent();
+          return;
         }
+
+        setProcessingJob((current) => current ? {
+          ...current,
+          status: payload.status,
+          progress: typeof payload.progress === 'number' ? payload.progress : current.progress,
+        } : current);
       } catch {
         // Keep polling until terminal state.
       }
@@ -317,7 +325,7 @@ export default function SuperPack() {
                         <div className="text-xs text-base-content/60">Block {processingJob.blockHeight}</div>
                       </div>
                     </div>
-                    <progress className="progress progress-primary w-full" value={60} max={100} />
+                    <progress className="progress progress-primary w-full" value={processingJob.progress ?? 10} max={100} />
                     <div className="text-xs text-base-content/60">
                       {processingJob.includeAudio
                         ? 'Typically 5-10 minutes (rendering + audio generation).'
@@ -347,9 +355,9 @@ export default function SuperPack() {
                   </div>
                 )}
 
-                {completedJob?.status === 'failed' && (
+                {(completedJob?.status === 'failed' || completedJob?.status === 'timeout') && (
                   <div className="mt-4 rounded-[22px] border border-error/30 bg-error/10 p-4">
-                    <span>{completedJob.error || 'Render failed'}</span>
+                    <span>{completedJob.error || (completedJob.status === 'timeout' ? 'Render timed out' : 'Render failed')}</span>
                   </div>
                 )}
               </div>
