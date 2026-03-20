@@ -275,8 +275,12 @@ const AIGenerator: React.FC = () => {
                   placeholder="Describe the style, mood, and characteristics of your music..."
                   className="textarea textarea-bordered w-full border-white/10 bg-white/5 text-base-content placeholder:text-base-content placeholder:opacity-50"
                   rows={3}
+                  maxLength={800}
                   disabled={isGenerating}
                 />
+                <div className={`text-xs text-right mt-1 ${prompt.length > 720 ? (prompt.length >= 800 ? 'text-error' : 'text-warning') : 'text-base-content opacity-40'}`}>
+                  {prompt.length}/800
+                </div>
                 
                 <div className="mt-2">
                   <p className="text-base-content opacity-60 text-xs mb-2">Try these prompts:</p>
@@ -433,7 +437,7 @@ const AIGenerator: React.FC = () => {
             <div className="flex gap-4 justify-center mb-8">
               <button
                 onClick={handleGenerate}
-                disabled={!isWalletConnected || !prompt.trim() || isGenerating}
+                disabled={!isWalletConnected || !prompt.trim() || prompt.length > 800 || isGenerating}
                 className="btn rounded-full border-none bg-primary px-6 text-primary-content shadow-[0_12px_30px_rgba(247,147,26,0.24)] hover:-translate-y-0.5 hover:bg-primary"
               >
                 {isGenerating ? 'Generating...' : 'Generate Music'}
