@@ -166,7 +166,7 @@ const AIGenerator: React.FC = () => {
   return (
     <div className="inspira-shell min-h-screen px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-8 flex flex-col gap-5 rounded-[32px] border border-white/10 bg-white/[0.03] p-6 sm:p-8 lg:flex-row lg:items-end lg:justify-between">
+        <div className="mb-8 flex flex-col gap-5 rounded-[32px] border border-white/10  /[0.03] p-6 sm:p-8 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-4">
             <span className="inspira-kicker">Pack Generator</span>
             <div>
@@ -194,7 +194,7 @@ const AIGenerator: React.FC = () => {
             {/* Generation Form */}
             <div className="space-y-6 mb-8">
               {/* Bitcoin Block BNS Section */}
-              <div className="rounded-[28px] border border-white/10 bg-white/[0.04] p-5">
+              <div className="rounded-[28px] border border-white/10  /[0.04] p-5">
                 <div className="flex items-center gap-2 mb-3">
                    <h3 className="text-lg font-semibold">Blockchain Inspiration (BNS)</h3>
                 </div>
@@ -210,7 +210,7 @@ const AIGenerator: React.FC = () => {
                       value={blockHeightInput}
                       onChange={(e) => setBlockHeightInput(e.target.value)}
                       placeholder={currentBlock ? String(currentBlock.height) : "Enter block height..."}
-                      className="input input-bordered w-full border-white/10 bg-white/5"
+                      className="input input-bordered w-full border-white/10  "
                       disabled={isLoadingBlock}
                     />
                   </div>
@@ -273,7 +273,7 @@ const AIGenerator: React.FC = () => {
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   placeholder="Describe the style, mood, and characteristics of your music..."
-                  className="textarea textarea-bordered w-full border-white/10 bg-white/5 text-base-content placeholder:text-base-content placeholder:opacity-50"
+                  className="textarea textarea-bordered w-full border-white/10   text-base-content placeholder:text-base-content placeholder:opacity-50"
                   rows={3}
                   maxLength={800}
                   disabled={isGenerating}
@@ -289,7 +289,7 @@ const AIGenerator: React.FC = () => {
                       <button
                         key={idx}
                         onClick={() => setPrompt(samplePrompt)}
-                        className="btn btn-xs rounded-full border border-white/10 bg-white/5 disabled:opacity-50"
+                        className="btn btn-xs rounded-full border border-white/10   disabled:opacity-50"
                         disabled={isGenerating}
                       >
                         {samplePrompt}
@@ -309,7 +309,7 @@ const AIGenerator: React.FC = () => {
                     max="200"
                     value={bpm}
                     onChange={(e) => setBpm(parseInt(e.target.value))}
-                    className="input input-bordered w-full border-white/10 bg-white/5"
+                    className="input input-bordered w-full border-white/10  "
                     disabled={isGenerating}
                   />
                 </div>
@@ -319,7 +319,7 @@ const AIGenerator: React.FC = () => {
                   <select
                     value={key}
                     onChange={(e) => setKey(e.target.value)}
-                    className="select select-bordered w-full border-white/10 bg-white/5"
+                    className="select select-bordered w-full border-white/10  "
                     disabled={isGenerating}
                   >
                     {keyOptions.map(k => (
@@ -336,7 +336,7 @@ const AIGenerator: React.FC = () => {
                     max="32"
                     value={duration}
                     onChange={(e) => setDuration(parseInt(e.target.value))}
-                    className="input input-bordered w-full border-white/10 bg-white/5"
+                    className="input input-bordered w-full border-white/10  "
                     disabled={isGenerating}
                   />
                 </div>
@@ -346,7 +346,7 @@ const AIGenerator: React.FC = () => {
                   <select
                     value={stems}
                     onChange={(e) => setStems(Number.parseInt(e.target.value, 10))}
-                    className="select select-bordered w-full border-white/10 bg-white/5"
+                    className="select select-bordered w-full border-white/10  "
                     disabled={isGenerating}
                   >
                     {stemOptions.map(opt => (
@@ -368,7 +368,7 @@ const AIGenerator: React.FC = () => {
                   <select
                     value={workflow}
                     onChange={(e) => setWorkflow(e.target.value)}
-                    className="select select-bordered w-full border-white/10 bg-white/5"
+                    className="select select-bordered w-full border-white/10  "
                     disabled={isGenerating || isLoadingWorkflows}
                   >
                     {isLoadingWorkflows ? (
@@ -403,7 +403,7 @@ const AIGenerator: React.FC = () => {
                   <select
                     value={modelSize}
                     onChange={(e) => setModelSize(e.target.value as 'small' | 'medium')}
-                    className="select select-bordered w-full border-white/10 bg-white/5"
+                    className="select select-bordered w-full border-white/10  "
                     disabled={isGenerating}
                   >
                     <option value="small">Small (Faster)</option>
