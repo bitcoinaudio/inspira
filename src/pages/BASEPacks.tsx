@@ -74,7 +74,7 @@ const BASEPacks: React.FC = () => {
       const allCompletedJobs: BASEPack[] = [];
 
       while (pagesFetched < MAX_PAGES) {
-        const response = await fetch(`${apiBase}/jobs?limit=${PAGE_SIZE}&offset=${offset}`);
+        const response = await fetch(`${apiBase}/jobs?pack_type=base&limit=${PAGE_SIZE}&offset=${offset}`);
         if (!response.ok) {
           throw new Error('Failed to fetch BASE packs');
         }
@@ -92,24 +92,9 @@ const BASEPacks: React.FC = () => {
         if (total !== null && offset >= total) break;
       }
 
-      console.log('Fetched completed jobs:', allCompletedJobs.length, 'total:', total);
+      console.log('Fetched BASE pack jobs:', allCompletedJobs.length, 'total:', total);
 
-      const isBasePackJob = (job: BASEPack) => {
-        const type = (job.type || '').toLowerCase();
-        const hasBlockHeight = typeof job.parameters?.blockHeight === 'number';
-        const stemsFile = job.stems_file || '';
-        const hasBaseStems = stemsFile.startsWith('base_stems_') || stemsFile.includes('base_stems_');
-        const imageUrl = job.outputs?.image_url || '';
-        const hasBitcoinImage = imageUrl.includes('bitcoin_');
-
-        return type === 'bitcoin_image' || hasBlockHeight || hasBaseStems || hasBitcoinImage;
-      };
-
-      // Filter for BASE pack jobs with relaxed matching (status can still be processing)
-      const bitcoinJobs = allCompletedJobs.filter(isBasePackJob);
-      console.log('Filtered BASE pack jobs:', bitcoinJobs.length);
-
-      setPacks(bitcoinJobs);
+      setPacks(allCompletedJobs);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');

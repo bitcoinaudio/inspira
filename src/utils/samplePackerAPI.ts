@@ -15,6 +15,7 @@ export interface SamplePackRequest {
 export interface SamplePackJob {
   job_id: string;
   status: 'queued' | 'processing' | 'completed' | 'failed' | 'timeout';
+  pack_type?: 'inspira' | 'base' | 'superpack' | 'nakapack';
   created_at: string;
   updated_at?: string;
   comfy_prompt_id?: string;
@@ -43,7 +44,25 @@ export interface SamplePackJob {
     manifest?: string;
     audio_files?: string[];
     image_url?: string;
+    full_song_url?: string;
   };
+}
+
+export type StemSeparationStatus = 'idle' | 'processing' | 'completed' | 'failed';
+
+export interface StemEntry {
+  id: string;
+  title?: string;
+  url: string;
+  duration_seconds?: number;
+}
+
+export interface StemSeparationResult {
+  status: StemSeparationStatus;
+  pack_id: string;
+  stem_job_id?: string;
+  stems?: StemEntry[];
+  error?: string;
 }
 
 export interface BitcoinImageRequest {
@@ -58,6 +77,7 @@ export interface BitcoinImageRequest {
 export interface SamplePackManifest {
   job_id: string;
   prompt: string;
+  pack_type?: 'inspira' | 'base' | 'superpack' | 'nakapack';
   parameters: {
     bpm: number;
     key: string;
@@ -65,6 +85,11 @@ export interface SamplePackManifest {
   };
   created_at: string;
   format_version: string;
+  full_song?: {
+    filename: string;
+    path: string;
+    duration_estimate: number;
+  } | null;
   audio: Array<{
     filename: string;
     path: string;
@@ -99,6 +124,7 @@ interface BeatfeedManifestV1 {
   schema?: { name: string; version: string };
   artifact?: {
     type: string;
+    pack_type?: string;
     source_app: string;
     source_ref: string;
     title: string;
@@ -107,6 +133,7 @@ interface BeatfeedManifestV1 {
   };
   assets?: {
     cover?: { kind: 'image'; url: string; size_bytes?: number };
+    full_song?: { kind: 'audio'; url: string; mime?: string; duration_seconds?: number };
   };
   contents?: {
     stems?: BeatfeedStemEntry[];
@@ -151,10 +178,19 @@ function normalizeManifest(rawManifest: unknown): SamplePackManifest {
     const stems = rawManifest.contents?.stems || [];
     const bpm = rawManifest.provenance?.seeds?.bpm || rawManifest.x?.samplepacker?.parameters?.bpm || 0;
     const key = rawManifest.provenance?.seeds?.key || rawManifest.x?.samplepacker?.parameters?.key || '';
-    
+
+    // Extract full_song if present (new generation model)
+    const rawFullSong = rawManifest.assets?.full_song;
+    const fullSong = rawFullSong?.url ? {
+      filename: rawFullSong.url.split('/').pop() || 'full_song.wav',
+      path: rawFullSong.url.replace('{{ASSET_BASE}}/', ''),
+      duration_estimate: rawFullSong.duration_seconds || 0,
+    } : null;
+
     return {
       job_id: rawManifest.artifact?.source_ref || rawManifest.x?.samplepacker?.job_id || 'unknown',
       prompt: rawManifest.artifact?.description || rawManifest.artifact?.title || '',
+      pack_type: (rawManifest.artifact?.pack_type as SamplePackManifest['pack_type']) || undefined,
       parameters: {
         bpm,
         key,
@@ -162,13 +198,14 @@ function normalizeManifest(rawManifest: unknown): SamplePackManifest {
       },
       created_at: rawManifest.artifact?.created_at || new Date().toISOString(),
       format_version: rawManifest.schema?.version || '1.0.0',
+      full_song: fullSong,
       audio: stems.map(stem => {
         // Extract filename from URL, removing the {{ASSET_BASE}}/ placeholder
         const rawUrl = stem.audio?.url || '';
         const filename = rawUrl.split('/').pop() || `${stem.id}.wav`;
         // Audio files are stored in the audio/ subdirectory on the gateway
         const path = filename ? `audio/${filename}` : '';
-        
+
         return {
           stem: stem.id,
           filename,
@@ -183,8 +220,9 @@ function normalizeManifest(rawManifest: unknown): SamplePackManifest {
         size: rawManifest.assets.cover.size_bytes || 0,
       } : null,
       stats: {
-        total_files: stems.length,
-        total_duration_estimate: rawManifest.x?.samplepacker?.total_duration_seconds || 
+        total_files: fullSong ? 1 : stems.length,
+        total_duration_estimate: rawManifest.x?.samplepacker?.total_duration_seconds ||
+          fullSong?.duration_estimate ||
           stems.reduce((acc, s) => acc + (s.audio?.duration_seconds || 0), 0),
       },
     };
@@ -286,11 +324,12 @@ export class SamplePackerAPI {
     return response.json();
   }
 
-  async listJobs(status?: string, limit?: number, offset?: number): Promise<SamplePackJob[]> {
+  async listJobs(status?: string, limit?: number, offset?: number, packType?: string): Promise<SamplePackJob[]> {
     const params = new URLSearchParams();
     if (status) params.append('status', status);
     if (limit) params.append('limit', limit.toString());
     if (offset) params.append('offset', offset.toString());
+    if (packType) params.append('pack_type', packType);
 
     const response = await this.fetchWithRetry(`${this.baseURL}/jobs?${params}`);
 
@@ -382,7 +421,7 @@ export class SamplePackerAPI {
     return response.json();
   }
 
-  async listWorkflows(): Promise<Array<{value: string, label: string, name: string, type: string}>> {
+  async listWorkflows(): Promise<Array<{value: string, label: string, name: string, type: string, category?: string}>> {
     const response = await this.fetchWithRetry(`${this.baseURL}/workflows`);
 
     if (!response.ok) {
@@ -392,6 +431,30 @@ export class SamplePackerAPI {
 
     const data = await response.json();
     return data.workflows || [];
+  }
+
+  async requestStemSeparation(packId: string): Promise<{ stem_job_id: string; status: 'processing'; pack_id: string }> {
+    const response = await this.fetchWithRetry(`${this.baseURL}/packs/${packId}/stems`, {
+      method: 'POST',
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  async getStemStatus(packId: string): Promise<StemSeparationResult> {
+    const response = await this.fetchWithRetry(`${this.baseURL}/packs/${packId}/stems`, {}, 2);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    return response.json();
   }
 }
 

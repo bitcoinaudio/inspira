@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import PublishToBeatfeedModal from '../components/PublishToBeatfeedModal';
 import { useWallet } from '../context/WalletContext';
 import WalletRequiredNotice from '../components/WalletRequiredNotice';
+import { useStemSeparation } from '../hooks/useStemSeparation';
 
 interface AudioFile {
   filename: string;
@@ -16,6 +17,7 @@ interface AudioFile {
 interface SamplePack {
   job_id: string;
   prompt: string;
+  pack_type?: string;
   parameters: {
     bpm: number;
     key: string;
@@ -25,10 +27,53 @@ interface SamplePack {
   audio: AudioFile[];
   audio_urls: AudioFile[];
   cover_url: string | null;
+  full_song_url?: string | null;
   models?: {
     audio?: string;
     checkpoint?: string;
   };
+}
+
+function hasSeparatedStems(pack: SamplePack): boolean {
+  return !pack.full_song_url && Array.isArray(pack.audio) && pack.audio.length > 0;
+}
+
+function GetStemsButton({ packId }: { packId: string }) {
+  const { stemStatus, requestStems, error } = useStemSeparation(packId);
+
+  if (stemStatus === 'completed') {
+    return (
+      <Link
+        to={`../studio/${packId}`}
+        className="rounded-full bg-success px-4 py-3 text-center text-sm font-semibold text-success-content"
+      >
+        View Stems
+      </Link>
+    );
+  }
+
+  if (stemStatus === 'processing') {
+    return (
+      <button disabled className="rounded-full border border-base-300 px-4 py-3 text-sm font-semibold text-base-content/50 opacity-75">
+        <span className="loading loading-spinner loading-xs mr-1" />
+        Separating...
+      </button>
+    );
+  }
+
+  return (
+    <button
+      onClick={() => requestStems(packId)}
+      className={`rounded-full border px-4 py-3 text-sm font-semibold transition ${
+        stemStatus === 'failed'
+          ? 'border-error text-error hover:bg-error/10'
+          : 'border-base-300 text-base-content hover:border-primary hover:text-primary'
+      }`}
+      title={error ?? undefined}
+    >
+      {stemStatus === 'failed' ? 'Retry Stems' : 'Get Stems'}
+    </button>
+  );
 }
 
 const SamplePacks: React.FC = () => {
@@ -57,7 +102,7 @@ const SamplePacks: React.FC = () => {
   const fetchPacks = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`${apiBase}/packs`);
+      const response = await fetch(`${apiBase}/packs?pack_type=inspira`);
 
       if (!response.ok) {
         throw new Error(`Failed to fetch sample packs: HTTP ${response.status}`);
@@ -146,7 +191,7 @@ const SamplePacks: React.FC = () => {
             <div className="inspira-kicker">Sample packs</div>
             <h1 className="mt-5 text-4xl text-base-content md:text-5xl">Browse generated packs and launch into Studio.</h1>
             <p className="mt-4 max-w-3xl text-lg leading-8 text-base-content/72">
-              Explore generated sample packs, preview individual stems, download complete bundles, and publish selected packs into Beatfeed when your wallet is connected.
+              Explore generated sample packs, preview the full song, download complete bundles, and publish selected packs into Beatfeed when your wallet is connected.
             </p>
           </div>
           <button onClick={fetchPacks} className="inline-flex rounded-full border border-base-300 px-5 py-3 font-semibold text-base-content hover:border-primary hover:text-primary">
@@ -182,7 +227,10 @@ const SamplePacks: React.FC = () => {
                 <div>
                   <h2 className="line-clamp-2 text-xl text-base-content">{pack.prompt}</h2>
                   <p className="mt-2 text-sm text-base-content/60">
-                    {(pack.audio?.length || 0)} stems • {formatDate(pack.created_at)}
+                    {pack.full_song_url
+                      ? 'Full song'
+                      : `${pack.audio?.length || 0} stems`
+                    } • {formatDate(pack.created_at)}
                   </p>
                 </div>
 
@@ -193,7 +241,17 @@ const SamplePacks: React.FC = () => {
                   </div>
                 )}
 
-                {pack.audio && pack.audio.length > 0 ? (
+                {/* Full song player (new packs) */}
+                {pack.full_song_url ? (
+                  <audio
+                    controls
+                    className="h-8 w-full"
+                    controlsList="nodownload"
+                    preload="metadata"
+                    src={buildFileUrl(pack.full_song_url) ?? undefined}
+                  />
+                ) : hasSeparatedStems(pack) ? (
+                  /* Legacy stem preview buttons (old packs) */
                   <div className="flex flex-wrap gap-2">
                     {pack.audio.slice(0, 4).map((audio, idx) => {
                       const audioPath =
@@ -227,6 +285,7 @@ const SamplePacks: React.FC = () => {
                       Download
                     </button>
                   </div>
+                  <GetStemsButton packId={pack.job_id} />
                   <button
                     onClick={() => {
                       if (!isWalletConnected) return;

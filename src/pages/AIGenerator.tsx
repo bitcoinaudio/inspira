@@ -5,6 +5,17 @@ import { samplePackerAPI } from '../utils/samplePackerAPI';
 import { useWallet } from '../context/WalletContext';
 import WalletRequiredNotice from '../components/WalletRequiredNotice';
 
+const VISIBLE_WORKFLOW_PREFIXES = ['audio-workflow/', 'inspira-packs/'];
+
+const PREFERRED_WORKFLOW_ORDER = [
+  'audio-workflow/ace-step-external-cover',
+  'inspira-packs/rad-graff-v3',
+  'inspira-packs/rad-graff-v2',
+  'inspira-packs/rad-graff-v1',
+];
+
+const FALLBACK_WORKFLOW = 'audio-workflow/ace-step-external-cover';
+
 const AIGenerator: React.FC = () => {
   const { isWalletConnected } = useWallet();
   const {
@@ -19,17 +30,14 @@ const AIGenerator: React.FC = () => {
     cleanup
   } = useSamplePackGenerator();
 
-  const { currentBlock, bnsPrompt, bnsMatches, fetchAndSetBlock, isLoading: isLoadingBlock } = useBlockchainStore();
+  const { currentBlock, bnsPrompt } = useBlockchainStore();
 
   const [prompt, setPrompt] = useState('');
-  const [blockHeightInput, setBlockHeightInput] = useState('');
   const [bpm, setBpm] = useState(120);
   const [key, setKey] = useState('Cmin');
-  const [duration, setDuration] = useState(8);
-  const [stems, setStems] = useState(2);
   const [modelSize, setModelSize] = useState<'small' | 'medium'>('small');
   const [guidance, setGuidance] = useState(3.0);
-  const [workflow, setWorkflow] = useState('inspira-packs/rad-graff-v1');
+  const [workflow, setWorkflow] = useState(FALLBACK_WORKFLOW);
   const [availableWorkflows, setAvailableWorkflows] = useState<Array<{
     value: string;
     label: string;
@@ -51,15 +59,6 @@ const AIGenerator: React.FC = () => {
     'synthwave retrowave with analog warmth'
   ];
 
-  const stemOptions = [
-    { value: 0, label: '0 stems (Image Only)' },
-    { value: 1, label: '1 stem (Drums)' },
-    { value: 2, label: '2 stems (Drums + Bass)' },
-    { value: 3, label: '3 stems (Drums + Bass + Chords)' },
-    { value: 4, label: '4 stems (+ Melody)' },
-    { value: 5, label: '5 stems (+ FX)' }
-  ];
-
   const keyOptions = [
     'Cmaj', 'Cmin', 'Dmaj', 'Dmin', 'Emaj', 'Emin',
     'Fmaj', 'Fmin', 'Gmaj', 'Gmin', 'Amaj', 'Amin', 'Bmaj', 'Bmin'
@@ -73,37 +72,42 @@ const AIGenerator: React.FC = () => {
   useEffect(() => {
     const fetchWorkflows = async () => {
       try {
-        const workflows = await samplePackerAPI.listWorkflows();
-        setAvailableWorkflows(workflows);
-        
-        // Set default workflow to first inspira-packs workflow if available
-        if (workflows.length > 0 && !workflow) {
-          const inspiraWorkflow = workflows.find(w => (w as any).category === 'inspira-packs' || w.value.includes('inspira-packs'));
-          if (inspiraWorkflow) {
-            setWorkflow(inspiraWorkflow.value);
-          } else {
-            setWorkflow(workflows[0].value);
-          }
+        const allWorkflows = await samplePackerAPI.listWorkflows();
+        const fullSongWorkflows = allWorkflows
+          .filter((workflowOption) =>
+            VISIBLE_WORKFLOW_PREFIXES.some((prefix) => workflowOption.value.startsWith(prefix))
+          )
+          .sort((left, right) => {
+            const leftOrder = PREFERRED_WORKFLOW_ORDER.indexOf(left.value);
+            const rightOrder = PREFERRED_WORKFLOW_ORDER.indexOf(right.value);
+
+            if (leftOrder !== -1 || rightOrder !== -1) {
+              if (leftOrder === -1) return 1;
+              if (rightOrder === -1) return -1;
+              return leftOrder - rightOrder;
+            }
+
+            return left.label.localeCompare(right.label);
+          });
+
+        setAvailableWorkflows(fullSongWorkflows);
+
+        if (fullSongWorkflows.length > 0) {
+          setWorkflow(fullSongWorkflows[0].value);
         }
       } catch (error) {
         console.error('Error fetching workflows:', error);
-        // Fallback to default workflows with new structure
+        // Fallback to the most reliable currently exposed full-song workflow
         setAvailableWorkflows([
-          { 
-            value: 'inspira-packs/rad-graff-v1',
-            label: 'Rad Graff V1',
-            name: 'rad-graff-v1',
-            category: 'inspira-packs',
-            categoryLabel: 'Inspira Packs'
-          },
           {
-            value: 'base-packs/bitcoin-image-v1',
-            label: 'Bitcoin Image V1',
-            name: 'bitcoin-image-v1',
-            category: 'base-packs',
-            categoryLabel: 'Base Packs'
+            value: FALLBACK_WORKFLOW,
+            label: 'Ace Step External Cover',
+            name: 'ace-step-external-cover',
+            category: 'audio-workflow',
+            categoryLabel: 'Audio Workflow'
           }
         ]);
+        setWorkflow(FALLBACK_WORKFLOW);
       } finally {
         setIsLoadingWorkflows(false);
       }
@@ -118,13 +122,6 @@ const AIGenerator: React.FC = () => {
     }
   }, [bnsPrompt, currentBlock]);
 
-  const handleFetchBlock = async () => {
-    const height = parseInt(blockHeightInput);
-    if (!isNaN(height) && height >= 0) {
-      await fetchAndSetBlock(height);
-    }
-  };
-
   const handleGenerate = async () => {
     if (!isWalletConnected || !prompt.trim()) return;
 
@@ -132,12 +129,10 @@ const AIGenerator: React.FC = () => {
       prompt: prompt.trim(),
       bpm: Number(bpm),
       key,
-      duration: Number(duration),
-      stems: Number(stems),
       model_size: modelSize,
       guidance: Number(guidance),
       cover_model: "grfft",
-      workflow: workflow || 'rad-graff-v1'
+      workflow: workflow || FALLBACK_WORKFLOW
     };
 
     console.log('[AIGenerator] Generation request:', request);
@@ -163,6 +158,15 @@ const AIGenerator: React.FC = () => {
     window.location.href = downloadUrl;
   };
 
+  const buildAudioUrl = (raw?: string | null) => {
+    if (!raw) return undefined;
+    if (/^https?:\/\//i.test(raw)) return raw;
+    if (raw.startsWith('/api')) return raw;
+    if (raw.startsWith('/files')) return `/api${raw}`;
+    if (raw.startsWith('files/')) return `/api/${raw}`;
+    return `/api/files/${raw.replace(/^\//, '')}`;
+  };
+
   return (
     <div className="inspira-shell min-h-screen px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
@@ -174,7 +178,7 @@ const AIGenerator: React.FC = () => {
                 Sample Pack Generator
               </h1>
               <p className="mt-3 max-w-2xl text-base text-base-content/72 sm:text-lg">
-                Create custom music, stems, and cover art from a single guided generation flow.
+                Create custom songs and cover art from a single guided generation flow.
               </p>
             </div>
           </div>
@@ -194,7 +198,7 @@ const AIGenerator: React.FC = () => {
             {/* Generation Form */}
             <div className="space-y-6 mb-8">
               {/* Bitcoin Block BNS Section */}
-              <div className="rounded-[28px] border border-white/10  /[0.04] p-5">
+              {/* <div className="rounded-[28px] border border-white/10  /[0.04] p-5">
                 <div className="flex items-center gap-2 mb-3">
                    <h3 className="text-lg font-semibold">Blockchain Inspiration (BNS)</h3>
                 </div>
@@ -263,7 +267,7 @@ const AIGenerator: React.FC = () => {
                     <div className="text-success font-medium text-sm">BNS prompt generated and applied below</div>
                   </div>
                 )}
-              </div>
+              </div> */}
 
               <div>
                 <label className="block text-base-content text-sm font-medium mb-2">
@@ -300,7 +304,7 @@ const AIGenerator: React.FC = () => {
               </div>
 
               {/* Parameters Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
                 <div>
                   <label className="block text-base-content text-sm font-medium mb-2">BPM</label>
                   <input
@@ -326,38 +330,6 @@ const AIGenerator: React.FC = () => {
                       <option key={k} value={k}>{k}</option>
                     ))}
                   </select>
-                </div>
-
-                <div>
-                  <label className="block text-base-content text-sm font-medium mb-2">Duration (s)</label>
-                  <input
-                    type="number"
-                    min="4"
-                    max="32"
-                    value={duration}
-                    onChange={(e) => setDuration(parseInt(e.target.value))}
-                    className="input input-bordered w-full border-white/10  "
-                    disabled={isGenerating}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-base-content text-sm font-medium mb-2">Stems</label>
-                  <select
-                    value={stems}
-                    onChange={(e) => setStems(Number.parseInt(e.target.value, 10))}
-                    className="select select-bordered w-full border-white/10  "
-                    disabled={isGenerating}
-                  >
-                    {stemOptions.map(opt => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="text-xs text-base-content/50 mt-1">
-                    Selected stems: {stems}
-                  </div>
                 </div>
               </div>
 
@@ -394,7 +366,7 @@ const AIGenerator: React.FC = () => {
                     )}
                   </select>
                   <p className="text-xs text-base-content/50 mt-1">
-                    Workflows organized by pack type
+                    Audio Workflow and Inspira Packs workflows
                   </p>
                 </div>
 
@@ -542,8 +514,8 @@ const AIGenerator: React.FC = () => {
                             <div className="grid grid-cols-2 gap-2">
                               <div><span className="font-medium">BPM:</span> {generationResult.manifest?.parameters.bpm}</div>
                               <div><span className="font-medium">Key:</span> {generationResult.manifest?.parameters.key}</div>
-                              <div><span className="font-medium">Stems:</span> {generationResult.manifest?.parameters.stems_count}</div>
-                              <div><span className="font-medium">Duration:</span> {generationResult.manifest?.stats.total_duration_estimate.toFixed(1)}s</div>
+                              <div><span className="font-medium">Format:</span> {generationResult.manifest?.full_song ? 'Full song' : 'Stem pack'}</div>
+                              <div><span className="font-medium">Runtime:</span> {generationResult.manifest?.stats.total_duration_estimate.toFixed(1)}s</div>
                             </div>
                           </div>
                         </div>
@@ -558,7 +530,7 @@ const AIGenerator: React.FC = () => {
                         </button>
 
                         <div className="text-xs text-base-content opacity-60 text-center mt-2">
-                          Package includes: Audio stems, cover art, README, license
+                          Package includes: Full song audio, cover art, README, license
                         </div>
                         
                         <button
@@ -572,28 +544,47 @@ const AIGenerator: React.FC = () => {
 
                     {/* Right Column: Generated Tracks */}
                     <div>
-                      <h4 className="text-base-content font-medium mb-2">Generated Tracks:</h4>
+                      <h4 className="text-base-content font-medium mb-2">
+                        {generationResult.manifest?.full_song ? 'Generated Song:' : 'Generated Tracks:'}
+                      </h4>
                       <div className="space-y-2">
-                        {generationResult.manifest?.audio.map((audio, idx) => (
-                          <div key={idx} className="rounded-[22px] border border-white/10 bg-black/20 p-3 shadow-sm">
-                            <div>
-                              <div className="flex items-center justify-between mb-2">
-                                <div>
-                                  <div className="text-base-content font-medium">{audio.stem}</div>
-                                  <div className="text-base-content opacity-60 text-xs">
-                                    {audio.duration_estimate}s @ {audio.sample_rate}Hz
+                        {generationResult.manifest?.full_song ? (
+                          <div className="rounded-[22px] border border-white/10 bg-black/20 p-3 shadow-sm">
+                            <div className="mb-2">
+                              <div className="text-base-content font-medium">Full song mix</div>
+                              <div className="text-base-content opacity-60 text-xs">
+                                {generationResult.manifest.stats.total_duration_estimate.toFixed(1)}s
+                              </div>
+                            </div>
+                            <audio
+                              controls
+                              src={buildAudioUrl(generationResult.manifest.full_song.path)}
+                              className="w-full"
+                              preload="metadata"
+                            />
+                          </div>
+                        ) : (
+                          generationResult.manifest?.audio.map((audio, idx) => (
+                            <div key={idx} className="rounded-[22px] border border-white/10 bg-black/20 p-3 shadow-sm">
+                              <div>
+                                <div className="flex items-center justify-between mb-2">
+                                  <div>
+                                    <div className="text-base-content font-medium">{audio.stem}</div>
+                                    <div className="text-base-content opacity-60 text-xs">
+                                      {audio.duration_estimate}s @ {audio.sample_rate}Hz
+                                    </div>
                                   </div>
                                 </div>
+                                <audio
+                                  controls
+                                  src={generationResult.audioUrls?.[idx]}
+                                  className="w-full"
+                                  preload="none"
+                                />
                               </div>
-                              <audio
-                                controls
-                                src={generationResult.audioUrls?.[idx]}
-                                className="w-full"
-                                preload="none"
-                              />
                             </div>
-                          </div>
-                        ))}
+                          ))
+                        )}
                       </div>
                     </div>
                   </div>

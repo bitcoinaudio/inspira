@@ -7,6 +7,7 @@ type JobStatus = 'processing' | 'completed' | 'failed' | 'timeout';
 interface SuperPackJob {
   job_id: string;
   status: JobStatus;
+  pack_type?: string;
   blockHeight: number;
   dataSource?: 'hash' | 'merkle_root';
   includeAudio?: boolean;
@@ -16,12 +17,10 @@ interface SuperPackJob {
   outputs?: {
     image_url?: string;
     video_url?: string;
-    audio_stems?: Record<string, string>;
+    full_song_url?: string;
   };
   error?: string;
 }
-
-const stemOrder = ['drums', 'bass', 'chords', 'melody', 'fx'];
 
 export default function SuperPack() {
   const [blockHeight, setBlockHeight] = useState('');
@@ -37,24 +36,7 @@ export default function SuperPack() {
   const blockHeightNum = Number.parseInt(blockHeight, 10);
   const isBlockHeightValid = !Number.isNaN(blockHeightNum) && blockHeightNum >= 0;
 
-  const orderedStems = useMemo(() => {
-    if (!completedJob?.outputs?.audio_stems) return [] as Array<[string, string]>;
-
-    const entries = Object.entries(completedJob.outputs.audio_stems)
-      .map(([stem, url]) => {
-        const normalized = normalizeApiUrl(url);
-        return normalized ? [stem, normalized] as [string, string] : null;
-      })
-      .filter((entry): entry is [string, string] => entry !== null);
-
-    const sorted = [...entries].sort((a, b) => {
-      const ai = stemOrder.indexOf(a[0]);
-      const bi = stemOrder.indexOf(b[0]);
-      return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
-    });
-
-    return sorted;
-  }, [completedJob]);
+  const fullSongUrl = useMemo(() => normalizeApiUrl(completedJob?.outputs?.full_song_url), [completedJob]);
 
   const fetchRecent = async () => {
     try {
@@ -65,23 +47,14 @@ export default function SuperPack() {
       const jobs = (Array.isArray(data?.results) ? data.results : Array.isArray(data?.jobs) ? data.jobs : []) as SuperPackJob[];
 
       const superpacks = jobs
-        .filter((job) => (job as { type?: string }).type?.toLowerCase?.() === 'superpack')
+        .filter((job) => job.pack_type === 'superpack' || (job as { type?: string }).type?.toLowerCase?.() === 'superpack')
         .filter((job) => job.status === 'completed')
         .map((job) => ({
           ...job,
           outputs: {
             image_url: normalizeApiUrl(job.outputs?.image_url),
             video_url: normalizeApiUrl(job.outputs?.video_url),
-            audio_stems: job.outputs?.audio_stems
-              ? Object.fromEntries(
-                  Object.entries(job.outputs.audio_stems)
-                    .map(([stem, url]) => {
-                      const normalized = normalizeApiUrl(url);
-                      return normalized ? [stem, normalized] : null;
-                    })
-                    .filter((entry): entry is [string, string] => entry !== null)
-                )
-              : undefined,
+            full_song_url: normalizeApiUrl(job.outputs?.full_song_url),
           },
         }))
         .filter((job) => !!job.outputs?.image_url)
@@ -112,27 +85,17 @@ export default function SuperPack() {
 
         const payload = await response.json();
         if (payload.status === 'completed') {
-          const normalizedStems = payload.outputs?.audio_stems
-            ? Object.fromEntries(
-                Object.entries(payload.outputs.audio_stems)
-                  .map(([stem, url]) => {
-                    const normalized = normalizeApiUrl(url as string);
-                    return normalized ? [stem, normalized] : null;
-                  })
-                  .filter((entry): entry is [string, string] => entry !== null)
-              )
-            : undefined;
-
           setProcessingJob(null);
           setCompletedJob({
             ...processingJob,
             status: 'completed',
+            pack_type: payload.pack_type,
             dataSource: payload.parameters?.dataSource,
             includeAudio: payload.parameters?.includeAudio,
             outputs: {
               image_url: normalizeApiUrl(payload.outputs?.image_url) || `/api/files/superpack_${processingJob.blockHeight}_${processingJob.job_id}.png`,
               video_url: normalizeApiUrl(payload.outputs?.video_url) || `/api/files/superpack_${processingJob.blockHeight}_${processingJob.job_id}.mp4`,
-              audio_stems: normalizedStems,
+              full_song_url: normalizeApiUrl(payload.outputs?.full_song_url),
             },
           });
           fetchRecent();
@@ -221,7 +184,7 @@ export default function SuperPack() {
           <div className="mt-6 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div>
               <h1 className="text-4xl font-bold text-primary md:text-5xl">SuperPack Creator</h1>
-              <p className="mt-3 text-lg text-base-content/70">Generate artwork, motion, and optional audio layers from Bitcoin block data.</p>
+              <p className="mt-3 text-lg text-base-content/70">Generate artwork, motion, and an optional full song from Bitcoin block data.</p>
             </div>
 
             <div className="flex items-center gap-3">
@@ -284,10 +247,10 @@ export default function SuperPack() {
                         onChange={(event) => setIncludeAudio(event.target.checked)}
                         className="checkbox checkbox-primary"
                       />
-                      <span className="label-text">Include AI-Generated Audio Stems</span>
+                      <span className="label-text">Include AI-Generated Full Song</span>
                     </label>
                     <p className="text-sm opacity-75 mt-2 ml-8">
-                      {includeAudio ? 'Audio generation enabled (5-10 min)' : 'Audio disabled (2-5 min)'}
+                      {includeAudio ? 'Full-song generation enabled (5-10 min)' : 'Audio disabled (2-5 min)'}
                     </p>
                   </div>
                 </div>
@@ -320,7 +283,7 @@ export default function SuperPack() {
                       <span className="loading loading-spinner loading-md" />
                       <div>
                         <div className="text-sm font-semibold">
-                          {processingJob.includeAudio ? 'Rendering SuperPack with Audio' : 'Rendering SuperPack'}
+                          {processingJob.includeAudio ? 'Rendering SuperPack with Full Song' : 'Rendering SuperPack'}
                         </div>
                         <div className="text-xs text-base-content/60">Block {processingJob.blockHeight}</div>
                       </div>
@@ -328,7 +291,7 @@ export default function SuperPack() {
                     <progress className="progress progress-primary w-full" value={processingJob.progress ?? 10} max={100} />
                     <div className="text-xs text-base-content/60">
                       {processingJob.includeAudio
-                        ? 'Typically 5-10 minutes (rendering + audio generation).'
+                        ? 'Typically 5-10 minutes (rendering + song generation).'
                         : 'Typically 2-5 minutes.'}
                     </div>
                   </div>
@@ -352,6 +315,15 @@ export default function SuperPack() {
                         Download Video
                       </a>
                     )}
+
+                    {fullSongUrl && (
+                      <>
+                        <audio controls preload="metadata" className="w-full" src={fullSongUrl} />
+                        <a href={fullSongUrl} download className="btn btn-sm btn-outline w-full">
+                          Download Full Song
+                        </a>
+                      </>
+                    )}
                   </div>
                 )}
 
@@ -364,21 +336,13 @@ export default function SuperPack() {
             </div>
           </div>
 
-          {orderedStems.length > 0 && (
+          {fullSongUrl && (
             <div className="mt-6 inspira-panel rounded-[30px] border border-white/10">
               <div className="p-6">
-                <div className="text-sm font-semibold">Audio Stems</div>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                  {orderedStems.map(([stem, url]) => (
-                    <div key={stem} className="flex flex-col items-center gap-2">
-                      <span className="text-xs font-semibold capitalize">{stem}</span>
-                      <audio controls className="w-full h-8" src={url} />
-                      <a href={url} download={`${stem}_${completedJob?.blockHeight || 'superpack'}.wav`} className="btn btn-xs btn-outline">
-                        Download
-                      </a>
-                    </div>
-                  ))}
-                </div>
+                <div className="text-sm font-semibold">Generated Full Song</div>
+                <p className="mt-2 text-sm text-base-content/70">
+                  Runtime is determined by the rendered output. Use the Studio stem-separation flow later if you need isolated parts.
+                </p>
               </div>
             </div>
           )}
@@ -402,7 +366,7 @@ export default function SuperPack() {
                         <Link to="/superpack-gallery" className="btn btn-xs btn-outline">
                           Open Gallery
                         </Link>
-                        {job.outputs?.audio_stems && Object.keys(job.outputs.audio_stems).length > 0 && (
+                        {job.outputs?.full_song_url && (
                           <span className="badge badge-success badge-sm">Audio</span>
                         )}
                       </div>

@@ -1,11 +1,44 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { normalizeApiUrl } from '../utils/samplePackerAPI';
+import { useStemSeparation } from '../hooks/useStemSeparation';
+
+function GetStemsButton({ packId }: { packId: string }) {
+  const { stemStatus, requestStems, error } = useStemSeparation(packId);
+
+  if (stemStatus === 'completed') {
+    return (
+      <Link to={`/studio/${packId}`} className="btn btn-xs btn-success">
+        View Stems
+      </Link>
+    );
+  }
+
+  if (stemStatus === 'processing') {
+    return (
+      <button disabled className="btn btn-xs btn-outline opacity-75">
+        <span className="loading loading-spinner loading-xs mr-1" />
+        Separating...
+      </button>
+    );
+  }
+
+  return (
+    <button
+      onClick={() => requestStems(packId)}
+      className={`btn btn-xs btn-outline ${stemStatus === 'failed' ? 'btn-error' : ''}`}
+      title={error ?? undefined}
+    >
+      {stemStatus === 'failed' ? 'Retry Stems' : 'Get Stems'}
+    </button>
+  );
+}
 
 interface SuperPackJob {
   job_id: string;
   status: 'processing' | 'completed' | 'failed';
   type?: string;
+  pack_type?: string;
   created_at?: string;
   updated_at?: string;
   parameters?: {
@@ -17,6 +50,7 @@ interface SuperPackJob {
     image_url?: string;
     video_url?: string;
     audio_stems?: Record<string, string>;
+    full_song_url?: string;
   };
 }
 
@@ -51,7 +85,7 @@ export default function SuperPackGallery() {
       const allJobs: SuperPackJob[] = [];
 
       while (page < maxPages) {
-        const response = await fetch(`/api/jobs?limit=${pageSize}&offset=${offset}`);
+        const response = await fetch(`/api/jobs?pack_type=superpack&limit=${pageSize}&offset=${offset}`);
         if (!response.ok) break;
 
         const data = await response.json();
@@ -65,13 +99,14 @@ export default function SuperPackGallery() {
       }
 
       const normalized = allJobs
-        .filter((job) => (job.type || '').toLowerCase() === 'superpack')
         .filter((job) => job.status === 'completed')
+        .filter((job) => job.pack_type === 'superpack' || job.type?.toLowerCase() === 'superpack')
         .map((job) => ({
           ...job,
           outputs: {
             image_url: normalizeApiUrl(job.outputs?.image_url),
             video_url: normalizeApiUrl(job.outputs?.video_url),
+            full_song_url: normalizeApiUrl(job.outputs?.full_song_url),
             audio_stems: job.outputs?.audio_stems
               ? Object.fromEntries(
                   Object.entries(job.outputs.audio_stems)
@@ -113,7 +148,7 @@ export default function SuperPackGallery() {
   };
 
   const hasAudio = useMemo(
-    () => jobs.some((job) => !!job.outputs?.audio_stems && Object.keys(job.outputs.audio_stems).length > 0),
+    () => jobs.some((job) => !!job.outputs?.full_song_url || (!!job.outputs?.audio_stems && Object.keys(job.outputs.audio_stems).length > 0)),
     [jobs]
   );
 
@@ -141,7 +176,7 @@ export default function SuperPackGallery() {
             <span className="inspira-kicker">SuperPack Archive</span>
             <div>
               <h1 className="text-4xl font-bold text-primary sm:text-5xl">SuperPack Gallery</h1>
-              <p className="mt-3 text-base text-base-content/72 sm:text-lg">Browse completed SuperPacks and download visuals, video, and stems.</p>
+              <p className="mt-3 text-base text-base-content/72 sm:text-lg">Browse completed SuperPacks and download visuals, video, and full-song audio.</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -181,13 +216,23 @@ export default function SuperPackGallery() {
                     ) : null}
                     <div className="absolute top-2 left-2 flex gap-2">
                       <span className="badge badge-neutral">SuperPack</span>
-                      {stems.length > 0 && <span className="badge badge-success">Audio</span>}
+                      {(job.outputs?.full_song_url || stems.length > 0) && <span className="badge badge-success">Audio</span>}
                     </div>
                   </figure>
 
                   <div className="p-4">
                     <div className="text-sm font-semibold">Block {blockHeight}</div>
                     <div className="text-xs text-base-content/60">{formatDate(job.updated_at || job.created_at)}</div>
+
+                    {job.outputs?.full_song_url && (
+                      <audio
+                        controls
+                        className="mt-3 h-8 w-full"
+                        controlsList="nodownload"
+                        preload="metadata"
+                        src={job.outputs.full_song_url}
+                      />
+                    )}
 
                     <div className="mt-3 grid grid-cols-2 gap-2">
                       {job.outputs?.image_url && (
@@ -200,11 +245,12 @@ export default function SuperPackGallery() {
                           Download Video
                         </a>
                       )}
+                      <GetStemsButton packId={job.job_id} />
                     </div>
 
                     {stems.length > 0 && (
                       <div className="mt-3 pt-3 border-t border-base-300">
-                        <div className="text-xs font-semibold mb-2">Audio Stems</div>
+                        <div className="text-xs font-semibold mb-2">Optional Derived Stems</div>
                         <div className="grid grid-cols-2 gap-2">
                           {stems.map(([stem, url]) => (
                             <a
@@ -228,7 +274,7 @@ export default function SuperPackGallery() {
 
         {hasAudio && (
           <div className="mt-8 text-xs text-base-content/60">
-            Cards with an Audio badge include downloadable stems.
+            Cards with an Audio badge include a generated full song. Some may also expose optional derived stems.
           </div>
         )}
       </div>

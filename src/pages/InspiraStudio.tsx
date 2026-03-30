@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import * as Tone from 'tone';
 import { useStudioSettings, useAudioExport } from '../hooks/useStudioSettings';
+import { useStemSeparation } from '../hooks/useStemSeparation';
 
 // Helper function to convert dB to percentage (0-100)
 const dbToPercent = (db: number): number => {
@@ -70,11 +71,14 @@ interface Stem {
 
 interface PackData {
   job_id: string;
+  pack_type?: string;
   cover_url?: string;
   cover?: string;
   outputs?: {
     image_url?: string;
+    full_song_url?: string;
   };
+  full_song_url?: string;
   audio?: Array<{ filename: string; path: string; stem: string; url: string }>;
   audio_urls?: Array<{ filename: string; path: string; stem: string; url: string }>;
   prompt?: string;
@@ -95,6 +99,12 @@ const InspiraStudio: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isBasePack, setIsBasePack] = useState(false);
+  const [fullSongUrl, setFullSongUrl] = useState<string | null>(null);
+
+  // Full-song mode: pack has a full song but no stems loaded yet
+  const isFullSongMode = !!fullSongUrl && stems.length === 0;
+
+  const { stemStatus, stems: separatedStems, error: stemError, requestStems } = useStemSeparation(packId);
   const [isPlaying, setIsPlaying] = useState(false);
   const [masterVolume, setMasterVolume] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
@@ -164,6 +174,10 @@ const InspiraStudio: React.FC = () => {
         setPack(packData);
         setIsBasePack(false);
 
+        // Extract full song URL if present (new generation model)
+        const resolvedFullSong = packData.full_song_url || packData.outputs?.full_song_url || null;
+        setFullSongUrl(resolvedFullSong ? (resolvedFullSong.startsWith('/api') ? resolvedFullSong : `/api${resolvedFullSong}`) : null);
+
         // Load stems
         const stemsArray: Stem[] = [];
         const audioFiles = packData.audio_urls || packData.audio || [];
@@ -216,6 +230,27 @@ const InspiraStudio: React.FC = () => {
 
     loadPack();
   }, [packId, settings]);
+
+  // When stem separation completes, load the separated stems into the mixer
+  useEffect(() => {
+    if (stemStatus !== 'completed' || separatedStems.length === 0) return;
+    const stemsArray: Stem[] = separatedStems.map((s, index) => ({
+      id: `stem-${index}`,
+      name: s.title || s.id,
+      url: s.url.startsWith('/api') ? s.url : `/api${s.url}`,
+      volume: 0,
+      pan: 0,
+      isMuted: false,
+      isSolo: false,
+      adsr: { attack: 0.005, decay: 0.1, sustain: 0.3, release: 0.5 },
+      effects: {
+        reverb: { enabled: false, wet: 0.3, decay: 1.5 },
+        delay: { enabled: false, wet: 0.3, time: 0.5, feedback: 0.5 },
+        chorus: { enabled: false, wet: 0.3, rate: 1.5, depth: 0.5 }
+      }
+    }));
+    setStems(stemsArray);
+  }, [stemStatus, separatedStems]);
 
   // Initialize Tone.js
   const initializeAudio = useCallback(async () => {
@@ -766,6 +801,42 @@ const InspiraStudio: React.FC = () => {
           </div>
         )}
 
+        {isFullSongMode && (
+          <div className="mb-6 rounded-[28px] border border-white/10 bg-white/[0.03] p-5 space-y-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="font-semibold text-base-content">Full Song</div>
+                <div className="text-sm text-base-content/60">
+                  This pack contains a full mixed track. Separate into stems to use the mixer.
+                </div>
+              </div>
+              {stemStatus === 'completed' ? (
+                <span className="text-sm font-semibold text-success">Stems ready — loading mixer...</span>
+              ) : stemStatus === 'processing' ? (
+                <button disabled className="btn btn-sm rounded-full opacity-75">
+                  <span className="loading loading-spinner loading-xs mr-1" />
+                  Separating stems...
+                </button>
+              ) : (
+                <button
+                  onClick={() => packId && requestStems(packId)}
+                  className={`btn btn-sm rounded-full ${stemStatus === 'failed' ? 'btn-error' : 'btn-primary'}`}
+                  title={stemError ?? undefined}
+                >
+                  {stemStatus === 'failed' ? 'Retry Stems' : 'Get Stems'}
+                </button>
+              )}
+            </div>
+            <audio
+              controls
+              className="h-8 w-full"
+              controlsList="nodownload"
+              preload="metadata"
+              src={fullSongUrl ?? undefined}
+            />
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Cover & Info */}
           <div className="lg:col-span-1 space-y-6">
@@ -1039,7 +1110,7 @@ const InspiraStudio: React.FC = () => {
               <div className="space-y-3 max-h-96 overflow-y-auto">
                 {stems.length === 0 ? (
                   <div className="text-center py-8 opacity-50">
-                    <p>{isBasePack ? 'This B.A.S.E pack has no audio stems to mix in Studio.' : 'No stems loaded'}</p>
+                    <p>{isBasePack ? 'This B.A.S.E pack has no audio stems to mix in Studio.' : isFullSongMode ? 'Use Get Stems above to separate the full song into individual stems.' : 'No stems loaded'}</p>
                   </div>
                 ) : (
                   stems.map((stem, index) => (
