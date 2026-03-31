@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useSamplePackGenerator, type GenerationRequest } from '../hooks/useSamplePackGenerator';
 import { useBlockchainStore } from '../stores/blockchainStore';
 import { samplePackerAPI } from '../utils/samplePackerAPI';
-import { useWallet } from '../context/WalletContext';
-import WalletRequiredNotice from '../components/WalletRequiredNotice';
 
 const VISIBLE_WORKFLOW_PREFIXES = ['audio-workflow/', 'inspira-packs/'];
 
@@ -17,7 +15,6 @@ const PREFERRED_WORKFLOW_ORDER = [
 const FALLBACK_WORKFLOW = 'audio-workflow/ace-step-external-cover';
 
 const AIGenerator: React.FC = () => {
-  const { isWalletConnected } = useWallet();
   const {
     isGenerating,
     currentJob,
@@ -123,7 +120,7 @@ const AIGenerator: React.FC = () => {
   }, [bnsPrompt, currentBlock]);
 
   const handleGenerate = async () => {
-    if (!isWalletConnected || !prompt.trim()) return;
+    if (!prompt.trim()) return;
 
     const request: GenerationRequest = {
       prompt: prompt.trim(),
@@ -184,8 +181,8 @@ const AIGenerator: React.FC = () => {
           </div>
           <div className="grid grid-cols-2 gap-3 sm:w-auto">
             <div className="inspira-metric">
-              <div className="text-xs uppercase tracking-[0.18em] text-base-content/45">Wallet</div>
-              <div className="mt-2 text-sm font-semibold">{isWalletConnected ? 'Connected' : 'Required'}</div>
+              <div className="text-xs uppercase tracking-[0.18em] text-base-content/45">Access</div>
+              <div className="mt-2 text-sm font-semibold">Open</div>
             </div>
             <div className="inspira-metric">
               <div className="text-xs uppercase tracking-[0.18em] text-base-content/45">Mode</div>
@@ -409,7 +406,7 @@ const AIGenerator: React.FC = () => {
             <div className="flex gap-4 justify-center mb-8">
               <button
                 onClick={handleGenerate}
-                disabled={!isWalletConnected || !prompt.trim() || prompt.length > 800 || isGenerating}
+                disabled={!prompt.trim() || prompt.length > 800 || isGenerating}
                 className="btn rounded-full border-none bg-primary px-6 text-primary-content shadow-[0_12px_30px_rgba(247,147,26,0.24)] hover:-translate-y-0.5 hover:bg-primary"
               >
                 {isGenerating ? 'Generating...' : 'Generate Music'}
@@ -424,10 +421,6 @@ const AIGenerator: React.FC = () => {
                 </button>
               )}
             </div>
-
-            {!isWalletConnected && (
-              <WalletRequiredNotice action="Generate/Publish" className="mb-8" />
-            )}
 
             {/* Progress */}
             {isGenerating && (
