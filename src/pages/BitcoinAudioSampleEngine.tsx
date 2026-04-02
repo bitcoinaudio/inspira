@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import * as Tone from 'tone';
 import { useBlockchainStore } from '../stores/blockchainStore';
-import { samplePackerAPI } from '../utils/samplePackerAPI';
+import { samplePackerAPI, normalizeApiUrl } from '../utils/samplePackerAPI';
 import { useWallet } from '../context/WalletContext';
 import WalletRequiredNotice from '../components/WalletRequiredNotice';
 
@@ -160,9 +160,7 @@ const BitcoinAudioSampleEngine: React.FC = () => {
 
       if (jobStatus.status === 'completed' && jobStatus.outputs?.image_url) {
         // Ensure the image URL has the correct base path
-        const imageUrl = jobStatus.outputs.image_url.startsWith('http') 
-          ? jobStatus.outputs.image_url 
-          : `http://localhost:3003${jobStatus.outputs.image_url}`;
+        const imageUrl = normalizeApiUrl(jobStatus.outputs.image_url) ?? String(jobStatus.outputs.image_url);
         setGeneratedImageUrl(imageUrl);
         console.log('Image generated successfully:', imageUrl);
         

@@ -40,7 +40,7 @@ export default function SuperPack() {
 
   const fetchRecent = async () => {
     try {
-      const response = await fetch('/api/jobs?limit=200&offset=0');
+      const response = await fetch('/api/jobs?pack_type=superpack&limit=200&offset=0');
       if (!response.ok) return;
 
       const data = await response.json();
@@ -136,10 +136,12 @@ export default function SuperPack() {
     setError(null);
 
     try {
-      const response = await fetch('/api/superpack', {
+      const response = await fetch('/api/packs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          prompt: `Bitcoin Block ${blockHeightNum}`,
+          workflow: 'inspira-packs/superpack',
           blockHeight: blockHeightNum,
           dataSource,
           includeAudio,

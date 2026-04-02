@@ -50,6 +50,31 @@ export interface SamplePackJob {
 
 export type StemSeparationStatus = 'idle' | 'processing' | 'completed' | 'failed';
 
+export interface NakapackVersionInfo {
+  enabled: boolean;
+  available: boolean;
+  child_stages?: string[];
+  beta_limitations?: string[];
+}
+
+export interface CapabilityResponse {
+  nakapack: {
+    pack_type: string;
+    supported_versions: string[];
+    versions: {
+      v1: NakapackVersionInfo;
+      v2: NakapackVersionInfo;
+      v3: NakapackVersionInfo;
+    };
+    engine: {
+      available: boolean;
+      member_count: number;
+    };
+  };
+}
+
+
+
 export interface StemEntry {
   id: string;
   title?: string;
@@ -386,6 +411,14 @@ export class SamplePackerAPI {
     return normalizeManifest(rawManifest);
   }
 
+  async getCapabilities(): Promise<CapabilityResponse> {
+    const response = await this.fetchWithRetry(`${this.baseURL}/capabilities`, {}, 1);
+    if (!response.ok) {
+      throw new Error(`Capabilities check failed: ${response.statusText}`);
+    }
+    return response.json();
+  }
+
   async checkHealth(): Promise<{ status: string; timestamp: string; uptime: number }> {
     try {
       const response = await this.fetchWithRetry(`${this.baseURL}/health`, {}, 1); // Single attempt for health check
@@ -454,6 +487,14 @@ export class SamplePackerAPI {
       throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
     }
 
+    return response.json();
+  }
+
+  async getPack(packId: string): Promise<unknown> {
+    const response = await this.fetchWithRetry(`${this.baseURL}/packs/${encodeURIComponent(packId)}`, {}, 2);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
     return response.json();
   }
 }

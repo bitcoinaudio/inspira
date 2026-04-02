@@ -11,6 +11,7 @@ interface StemData {
 interface BASEPack {
   job_id: string;
   status: string;
+  pack_type?: string;
   created_at: string;
   parameters: {
     blockHeight: number;
@@ -109,7 +110,7 @@ const BASEPacks: React.FC = () => {
       setIsSyncing(true);
 
       const idsToCheck = packs
-        .filter((pack) => pack.type === 'bitcoin_image' || pack.stems_file)
+        .filter((pack) => pack.pack_type === 'base' || pack.type === 'bitcoin_image' || pack.stems_file)
         .filter((pack) => pack.status !== 'completed' || !pack.outputs?.image_url)
         .map((pack) => pack.job_id);
 

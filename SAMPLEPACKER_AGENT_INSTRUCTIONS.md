@@ -1,6 +1,23 @@
 # SamplePacker Gateway — Pack Generation Restructuring Specs
 
-This document specifies the gateway-side changes needed to support the new pack generation model. The frontend (Inspira, Beatfeed) is being updated in parallel to consume these changes.
+This document specifies the gateway-side contract that the Inspira frontend consumes. The frontend has been updated to align with this contract as of March 2026.
+
+---
+
+## 0. Current Frontend Alignment Status
+
+Inspira frontend changes completed against this spec:
+
+| Area | Change | Status |
+|---|---|---|
+| SuperPack creation | `POST /api/superpack` → `POST /api/packs` with `workflow: 'inspira-packs/superpack'` | ✅ Done |
+| SuperPack jobs list | Added `pack_type=superpack` filter to `GET /api/jobs` | ✅ Done |
+| BASE pack detection | Updated filter to use `pack_type === 'base'` | ✅ Done |
+| InspiraStudio pack load | Replaced all-packs scan with `GET /api/packs/:id` direct fetch | ✅ Done |
+| URL normalization | Replaced hardcoded `http://localhost:3003` with `normalizeApiUrl()` | ✅ Done |
+| Polling backoff | Fixed `setInterval` → recursive `setTimeout` for exponential backoff | ✅ Done |
+| Capabilities | `SamplePackerAPI.getCapabilities()` calls `GET /api/capabilities` | ✅ Done |
+| Direct pack fetch | `SamplePackerAPI.getPack(packId)` calls `GET /api/packs/:id` | ✅ Done |
 
 ---
 
@@ -59,8 +76,9 @@ The generated Beatfeed manifest must include the full song in `assets`:
 
 ## 2. `pack_type` Field on Jobs
 
-### Requirement
-Every job must carry a `pack_type` field that identifies which pack category it belongs to. This replaces the current heuristic-based detection on the frontend.
+### Status: Implemented
+
+The Inspira frontend now filters on `pack_type` via query params. Frontend clients expect:
 
 ### Mapping (workflow category -> pack_type)
 | Workflow Category | pack_type |
@@ -80,8 +98,22 @@ Every job must carry a `pack_type` field that identifies which pack category it 
 ### API Filtering
 Add `pack_type` query parameter support to these endpoints:
 - `GET /api/jobs?pack_type=inspira` — returns only inspira pack jobs
+- `GET /api/jobs?pack_type=superpack` — used by SuperPack jobs list
 - `GET /api/packs?pack_type=inspira` — returns only inspira packs
 - Multiple values: `?pack_type=inspira,superpack` (optional, nice-to-have)
+
+### Direct pack lookup
+
+InspiraStudio uses `GET /api/packs/:id` to fetch a single pack directly (no longer scans all packs). The response shape expected:
+
+```json
+{
+  "job_id": "abc123",
+  "status": "completed",
+  "pack_type": "base",
+  "manifest": { "..." : "..." }
+}
+```
 
 ### Backfill
 Run a one-time migration on existing job records:
@@ -173,19 +205,39 @@ AceStep-Demucs (htdemucs model) typically outputs 4 stems: `drums`, `bass`, `oth
 
 ## 4. SuperPack Workflow Migration
 
-### Requirement
-Migrate the SuperPack workflow definition from `.json` to `.cjs` format to match the other workflow definitions.
+### Status: Frontend updated
 
-### Changes
+The Inspira frontend now calls `POST /api/packs` (unified entrypoint) with `workflow: 'inspira-packs/superpack'` and `pack_type: 'superpack'` in the request body. The legacy `POST /api/superpack` endpoint is no longer used by this frontend.
+
+### Gateway requirement
 - Convert `workflows/inspira-packs/superpack.json` (or `workflows/superpack-audio.json`) to `.cjs` format.
 - Ensure the gateway's workflow loader handles `.cjs` files for SuperPack.
 - Set `pack_type: "superpack"` in the workflow config.
-- SuperPack audio should use AceStep v1.5 (replacing MusicGen + Demucs chain from the old `BAudioGenerateMusicGen → BAudioSeparateDemucs` pipeline).
-- The SuperPack output should now be: **procedural visuals (image + video) + full song audio** (when `includeAudio: true`). No individual stems on generation.
+- SuperPack audio should use AceStep v1.5.
+- The SuperPack output should be: **procedural visuals (image + video) + full song audio** (when `includeAudio: true`).
 
 ---
 
-## 5. Manifest Schema Updates
+## 5. Capabilities Endpoint
+
+Inspira consumes `GET /api/capabilities` via `SamplePackerAPI.getCapabilities()`. This endpoint should return at minimum:
+
+```json
+{
+  "nakapack": {
+    "pack_type": "nakapack",
+    "supported_versions": ["v1", "v2", "v3"],
+    "versions": {
+      "v1": { "enabled": true, "available": true },
+      "v2": { "enabled": true, "available": true },
+      "v3": { "enabled": true, "available": false }
+    }
+  }
+}
+
+---
+
+## 6. Manifest Schema Updates
 
 The Beatfeed Manifest v1.0.0 schema should be extended to support:
 
@@ -216,7 +268,7 @@ The Beatfeed Manifest v1.0.0 schema should be extended to support:
 
 ---
 
-## 6. Scope Exclusions
+## 7. Scope Exclusions
 
 - **BASE Packs**: No change to audio generation. BASE packs use Tone.js hex-to-note mapping, not AceStep. They do NOT get the "Get Stems" feature.
 - **MIDI output**: Separate task, not part of this restructuring.

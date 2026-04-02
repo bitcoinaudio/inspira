@@ -48,7 +48,7 @@ export const useSamplePackGenerator = () => {
 
   const stopPolling = useCallback(() => {
     if (pollingRef.current) {
-      clearInterval(pollingRef.current);
+      clearTimeout(pollingRef.current);
       pollingRef.current = null;
     }
   }, []);
@@ -135,10 +135,17 @@ export const useSamplePackGenerator = () => {
       const job = await samplePackerAPI.createSamplePack(request);
       setCurrentJob(job);
 
-      // Use dynamic polling interval with ref
-      pollingRef.current = setInterval(() => {
-        pollJobStatus(job.job_id);
-      }, pollingIntervalRef.current);
+      // Use recursive setTimeout so pollingIntervalRef.current is read on every cycle,
+      // allowing exponential backoff on errors to actually take effect.
+      const scheduleNextPoll = () => {
+        pollingRef.current = setTimeout(async () => {
+          await pollJobStatus(job.job_id);
+          if (pollingRef.current !== null) {
+            scheduleNextPoll();
+          }
+        }, pollingIntervalRef.current);
+      };
+      scheduleNextPoll();
 
       return job;
     } catch (genError) {

@@ -138,25 +138,18 @@ const InspiraStudio: React.FC = () => {
     const loadPack = async () => {
       try {
         setIsLoading(true);
-        // Fetch all packs and find the one with matching job_id
-        const response = await fetch(`/api/packs`);
+        // Fetch pack directly by ID — avoids loading all packs to find one
+        const response = await fetch(`/api/packs/${encodeURIComponent(packId || '')}`);
 
         if (!response.ok) {
-          throw new Error(`Failed to load packs: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        const allPacks = data.packs || [];
-        const packData = allPacks.find((p: any) => p.job_id === packId);
-
-        if (!packData) {
+          // Not in packs registry — fall back to job endpoint (handles BASE packs)
           const jobResponse = await fetch(`/api/jobs/${packId}`);
           if (!jobResponse.ok) {
             throw new Error(`Pack with ID ${packId} not found`);
           }
 
           const jobData = await jobResponse.json();
-          if (jobData?.type !== 'bitcoin_image') {
+          if (jobData?.type !== 'bitcoin_image' && jobData?.pack_type !== 'base') {
             throw new Error(`Pack with ID ${packId} not found`);
           }
 
@@ -170,6 +163,45 @@ const InspiraStudio: React.FC = () => {
           setError(null);
           return;
         }
+
+        const packJson = await response.json();
+        // Normalize: GET /api/packs/:id returns { job_id, status, manifest: {...} }
+        // Handle both that shape and legacy flat list-item shape.
+        const mft = (packJson.manifest || {}) as {
+          artifact?: { pack_type?: string; description?: string };
+          assets?: {
+            full_song?: { url?: string };
+            cover?: { url?: string };
+          };
+          contents?: { stems?: Array<{ id?: string; audio?: { url?: string } }> };
+          x?: { samplepacker?: { parameters?: { bpm?: number; key?: string } } };
+        };
+
+        const normalizeManifestUrl = (raw?: string) => {
+          if (!raw) return null;
+          const cleaned = raw.replace('{{ASSET_BASE}}/', '/api/files/').replace('{{ASSET_BASE}}', '/api/files');
+          return cleaned.startsWith('/') || /^https?:\/\//i.test(cleaned) ? cleaned : `/api/${cleaned}`;
+        };
+
+        const packData: PackData = {
+          job_id: packJson.job_id || packId,
+          pack_type: packJson.pack_type || mft.artifact?.pack_type || undefined,
+          full_song_url: normalizeManifestUrl(packJson.full_song_url || mft.assets?.full_song?.url) || undefined,
+          outputs: packJson.outputs || {},
+          audio: packJson.audio || (mft.contents?.stems || []).map((stem) => ({
+            stem: stem.id || '',
+            url: normalizeManifestUrl(stem.audio?.url) || '',
+            path: (stem.audio?.url || '').replace('{{ASSET_BASE}}/', ''),
+            filename: (stem.audio?.url || '').split('/').pop() || '',
+          })),
+          audio_urls: packJson.audio_urls || [],
+          prompt: packJson.prompt || mft.artifact?.description || '',
+          cover_url: normalizeManifestUrl(packJson.cover_url || mft.assets?.cover?.url) || undefined,
+          parameters: packJson.parameters || {
+            bpm: mft.x?.samplepacker?.parameters?.bpm,
+            key: mft.x?.samplepacker?.parameters?.key,
+          },
+        };
 
         setPack(packData);
         setIsBasePack(false);
