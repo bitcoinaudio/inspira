@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: inspira/package-lock.json
+
+      - name: Install dependencies
+        working-directory: inspira
+        run: npm ci
+
+      - name: Lint
+        working-directory: inspira
+        run: npm run lint
+
+      - name: Build
+        working-directory: inspira
+        run: npm run build
